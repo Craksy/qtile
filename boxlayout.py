@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from libqtile.log_utils import logger
 class LayoutComponent:
     def __init__(self):
         self.drawer = None
@@ -113,6 +114,7 @@ class VBLayout(Container):
     def draw(self, offsetx, offsety):
         offsetx += self.margin
         offsety += self.margin
+        logger.debug('drawing vblayout at %d,%d', offsetx, offsety)
         for c in self.children:
             c.draw(self.x + offsetx, self.y + offsety)
             delta_offset = c.height
@@ -127,7 +129,7 @@ class VBLayout(Container):
 
 
 
-# DEPRECATED
+# DEPRECATED:
 # these are the old classes for the whichkey widget.
 # i keep them for a while just in case.
 class Spacer:
@@ -164,7 +166,7 @@ class BoxLayout:
                 del c
             else:
                 del c
-        self.children = []
+                self.children = []
 
 class HBoxLayout(BoxLayout):
     def __init__(self, drawer, xpos=0, ypos=0, spacing=None, margin=0):
@@ -195,8 +197,8 @@ class HBoxLayout(BoxLayout):
             delta_offset = c.width
             if delta_offset < self.min_width:
                 delta_offset = self.min_width
-            delta_offset += self.spacing
-            offsetx+=delta_offset
+                delta_offset += self.spacing
+                offsetx+=delta_offset
 
 class VBoxLayout(BoxLayout):
     def __init__(self, drawer, xpos=0, ypos=0, spacing=None, margin=0):
@@ -212,7 +214,7 @@ class VBoxLayout(BoxLayout):
     @property
     def height(self):
         self._height = sum(c.height for c in self.children) +\
-        (len(self.children)-1)*self.spacing
+            (len(self.children)-1)*self.spacing
         return self._height
 
     def draw(self, offsetx, offsety):
