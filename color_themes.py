@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
 
+
 @dataclass
-class ColorTheme:
-    #WIP
+class Style:
     background: str
     foreground: str
+    primary_accent: str
+    secondary_accent: str
+
 
 gruvbux = {
     'bg': '#282828',

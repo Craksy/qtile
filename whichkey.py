@@ -1,4 +1,5 @@
 import math
+from time import sleep
 from libqtile.log_utils import logger
 from libqtile.widget.base import ThreadPoolText, _TextBox, _Widget
 from libqtile import hook, window, bar, drawer, configurable
@@ -20,9 +21,6 @@ class VSep:
                               offsety, offsety+self.height,
                               self.thickness)
 
-
-
-
 class WhichKey(_Widget):
     def __init__(self):
         super().__init__(1)
@@ -36,16 +34,11 @@ class WhichKey(_Widget):
 
     def calculate_length(self):
         return 1
-    
+
     def draw(self):
         self.drawer.clear(gruvbux['bg'])
-        logger.debug('draw whichkey')
-        #self.winwidth = 200*len(self.layouts)
         self.layout.draw(0,0)
-        self.drawer.draw(0,0,self.winwidth, self.winheight)
-
-    def create_window(self):
-        pass
+        self.drawer.draw()
 
     def _configure(self, qtile, bar):
         logger.debug('%s\n%s\n%s', str(qtile), str(bar), 'lol')
@@ -54,7 +47,6 @@ class WhichKey(_Widget):
         self.winy = self.bar.height+self.margin
         self.add_defaults(bar.defaults)
         self.qtile = qtile
-        self.background = '#0000FF'
         self.bar = bar
         self.setup_hooks()
         self.window = window.Internal.create(qtile,
@@ -63,13 +55,10 @@ class WhichKey(_Widget):
                                              self.winwidth,
                                              self.winheight)
 
-        logger.debug('whichkey configured. qtile: %s', self.qtile)
+        self.drawer = drawer.Drawer(self.qtile,
+                                    self.window.window.wid,
+                                    800, 400)
 
-        self.drawer = drawer.Drawer(
-            self.qtile,
-            self.window.window.wid,
-            800,
-            400)
         self.drawer.clear(self.background)
         self.layout = HBoxLayout(self.drawer, 0,0,15, 10)
 
@@ -86,7 +75,8 @@ class WhichKey(_Widget):
 
     def create_collumns(self, chord:KeyChord):
         self.layout.clear()
-        mappings = [k for k in chord.submapings if not k.modifiers]
+        mappings = [k for k in chord.submapings \
+                    if not (k.modifiers or k.key=='Escape')]
         cur_row = 0
         min_width = 0
         nrows = 7
@@ -130,9 +120,6 @@ class WhichKey(_Widget):
         self.winwidth = self.layout.width
         self.winheight = self.layout.height
         self.winx = self.bar.screen.width - self.winwidth - self.margin
-        #self.window.send_configure_notify(self.winx, self.winy,
-                                          #self.winwidth, self.winheight)
-
 
     def setup_hooks(self):
         @hook.subscribe.enter_chord

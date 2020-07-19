@@ -39,7 +39,9 @@ import pynvim
 import datetime
 from bitstring import BitString
 from pynput import keyboard
-from whichkey import WhichKey
+# from whichkey import WhichKey
+from color_themes import gruvbux
+from desktop_widget import WkWidget
 
 interface = None
 current_chord = {}
@@ -49,23 +51,6 @@ wkwidget = None
 
 kboard = keyboard.Controller()
 
-gruvbux = {
-    'bg': '#282828',
-    'red':      '#cc241d',
-    'green':    '#98971a',
-    'yellow':   '#d77921',
-    'blue':     '#458588',
-    'purple':   '#b16286',
-    'aqua':     '#689d6a',
-    'orange':   '#d65d0e',
-    'red2':     '#fb4934',
-    'green2':   '#b8bb26',
-    'yellow2':  '#fabd2f',
-    'blue2':    '#83a598',
-    'purple2':  '#d3869b',
-    'aqua2':    '#8ec07c',
-    'orange2':  '#fe8019'
-}
 
 
 def smart_move(direction=None):
@@ -123,19 +108,20 @@ w_commands = [
 
 r_commands = [
     Key([], 'd', lazy.spawn('rofi -show drun'), desc='$Rofi drun'),
-    Key([], 'e', lazy.spawn('emacs'), desc='Spawn Emacs'),
-    Key([], 'r', lazy.spawn('konsole -e ranger'), desc='Spawn ranger'),
-    Key([], 'v', lazy.spawn('konsole -e nvim'), desc='Spawn nvim'),
-    Key([], 'w', lazy.spawn('konsole -e weechat'), desc='Spawn weechat'),
-    Key([], 'q', lazy.spawn('qutebrowser'), desc='Spawn Qutebrowser'),
+    Key([], 'e', lazy.spawn('emacs'), desc='Emacs'),
+    Key([], 'r', lazy.spawn('konsole -e ranger'), desc='Ranger'),
+    Key([], 'v', lazy.spawn('konsole -e nvim'), desc='Nvim'),
+    Key([], 'w', lazy.spawn('konsole -e weechat'), desc='Weechat'),
+    Key([], 'q', lazy.spawn('qutebrowser'), desc='Qutebrowser'),
 
 ]
 
 l_commands = [
-    Key([], 'm', lazy.group.setlayout('monadtall'), desc='MonadTall'),
-    Key([], 'w', lazy.group.setlayout('monadwide'), desc='MonadWide'),
-    Key([], 'z', lazy.group.setlayout('max'), desc='Zoom (max)'),
-    Key([], 's', lazy.group.setlayout('stack'), desc='Stack'),
+    Key([], 'm',   lazy.group.setlayout('monadtall'), desc='MonadTall'),
+    Key([], 'w',   lazy.group.setlayout('monadwide'), desc='MonadWide'),
+    Key([], 'z',   lazy.group.setlayout('max'), desc='Zoom (max)'),
+    Key([], 's',   lazy.group.setlayout('stack'), desc='Stack'),
+    Key([], 'Tab', lazy.next_layout(), desc='Next layout'),
 ]
 
 g_commands = [
@@ -181,28 +167,11 @@ chain_root = [
     Key([mod], "h", lazy.function(smart_move("left")),
         desc="Move left"),
     Key([mod], "l", lazy.function(smart_move("right")),
-        desc="Move right")
+        desc="Move right"),
+    Key(['control'], 'r', lazy.restart())
 ]
 
 keys = [
-    # Move windows up or down in current stack
-    Key([mod, "control"], "j", lazy.layout.shuffle_down(),
-        desc="Move window down in current stack"),
-    Key([mod, "control"], "k", lazy.layout.shuffle_up(),
-        desc="Move window up in current stack "),
-
-    Key([mod, "shift"], "l", lazy.layout.grow_main()),
-    Key([mod, "shift"], "h", lazy.layout.shrink_main()),
-
-    # Switch window focus to other pane(s) of stack
-    Key([mod], "Tab", lazy.layout.next(),
-        desc="Switch window focus to other pane(s) of stack"),
-    # Unsplit = 1 window displayed, like Max layout, but still with
-    # multiple stack panes
-    Key([mod, "shift"], "Return", lazy.layout.toggle_split(),
-        desc="Toggle between split and unsplit sides of stack"),
-    Key([mod], "Return", lazy.spawn(terminal), desc="Launch terminal"),
-
     Key([mod, "control"], "r", lazy.restart(), desc="Restart qtile"),
     Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown qtile"),
 
@@ -244,9 +213,9 @@ chain_root[0:0] = group_keys
 
 layouts = [
     layout.Max(),
-    layout.Stack(border_width=2, num_stacks=2, border_focus=gruvbux['orange']),
+    layout.Stack(border_width=2, num_stacks=2, border_focus=gruvbux['blue']),
     # Try more layouts by unleashing below layouts.
-    # layout.Bsp(),
+    layout.Bsp(),
     # layout.Columns(),
     # layout.Matrix(),
     layout.MonadTall(border_width=2, margin=5, border_focus=gruvbux['orange']),
@@ -279,7 +248,7 @@ screens = [
                                 rounded=False),
                 widget.Prompt(),
                 # widget.Chord(),
-                WhichKey(),
+                WkWidget(),
                 # widget.Notify(),
                 widget.Spacer(),
                 # widget.TaskList(border=gruvbux['orange'], fontsize=16),
@@ -347,15 +316,8 @@ focus_on_window_activation = "smart"
 @hook.subscribe.client_new
 def client_new(client: window.Window):
     global wkwidget
-    if client.name == "WhichKey Widget":
-        wkwidget = client
-        client.cmd_bring_to_front()
-        client.static(0)
-        client.update_state()
-        client.update_hints()
-        client.update_wm_net_icon()
-        client.update_name()
-        # client.place(300, 300, 200, 415, 0, 0, True)
+    if client.name == 'qutebrowser':
+        client.togroup('Web')
 
 # XXX: Gasp! We're lying here. In fact, nobody really uses or cares about this
 # string besides java UI toolkits; you can see several discussions on the
