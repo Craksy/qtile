@@ -15,7 +15,7 @@ an attempt to orgify my current qtile config
 At some point i'd like to sort these better
 *** Qtile
 Let's grab all the libqtile stuff
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 # This is a test
 from libqtile import window, bar, layout, widget, extension, hook
 from libqtile.config import (
@@ -35,7 +35,7 @@ from libqtile.utils import guess_terminal
 
 *** Other imports
 General imports that are not specific to Qtile
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 import glob
 from typing import List
 import subprocess
@@ -52,7 +52,7 @@ from desktop_widget import WkWidget
 ** Global variables declaration
 *** Qtile configuration variables
 Qtile expects these to be here
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 dgroups_key_binder = None
 dgroups_app_rules = []  # type: List
 main = None
@@ -67,7 +67,7 @@ wmname = "LG3D"
 *** Custom vars
 Misc global variables than needs to be available to the rest of the
 code.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 interface = None
 current_chord = {}
 mod = "mod4"
@@ -79,7 +79,7 @@ kboard = keyboard.Controller()
 *** Widget defaults
 Widget defaults are used by everthing on the bar. eventually also my custom
 widgets... i hope.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 widget_defaults = dict(
     font='FiraCode NF',
     fontsize=12,
@@ -91,7 +91,7 @@ extension_defaults = widget_defaults.copy()
 A function which provides seamless movement between nvim and qtile windows. If i
 keep being this impressed with emacs, this will probably be deprecated soon.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 def smart_move(direction=None):
     def __inner__(qtile):
         cur_win = qtile.current_window
@@ -125,7 +125,7 @@ Since my config is gonna be all prettied up in this org doc, i might do some
 nicer formatting than just defining them all in a list. Perhaps do some of that
 cool table stuff
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 groups = [
     Group(name="Dev", label="✎ Dev", layout='max'),
     Group(name="Home", label=" Home", layout='monadtall'),
@@ -143,7 +143,7 @@ groups = [
 these keybindings are for resizing windows. possibly we should have a group for
 each layout, as each layout has it's own ways to handle that.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 resize_commands = [
     Key([], 'l', lazy.layout.grow_main(), desc='Grow main'),
     Key([], 'h', lazy.layout.shrink_main(), desc='Shrink main'),
@@ -155,7 +155,7 @@ resize_commands = [
 Bindings for moving windows around the screen. as with resizing perhaps this
 should be specific to each layout.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 win_move_commands = [
     Key([], 'j', lazy.layout.shuffle_down(), desc='shuffle up'),
     Key([], 'k', lazy.layout.shuffle_up(), desc='shuffle down'),
@@ -163,7 +163,7 @@ win_move_commands = [
 #+END_SRC
 
 **** Root
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 w_commands = [
     Key([], 'q', lazy.window.kill(), desc='Kill'),
     Key([], 'space', lazy.window.toggle_fullscreen(), desc='Toggle fullscreen'),
@@ -178,7 +178,7 @@ w_commands = [
 Not much to say here. Just a buncha `lazy.spawn()` calls, binding my most used
 programs to keys.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 r_commands = [
     Key([], 'd', lazy.spawn('rofi -show drun'), desc='$Rofi drun'),
     Key([], 'e', lazy.spawn('emacs'), desc='Emacs'),
@@ -192,7 +192,7 @@ r_commands = [
 These are just commands to change the current layout. perhaps more interesting
 things could be done here?
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 l_commands = [
     Key([], 'm',   lazy.group.setlayout('monadtall'), desc='MonadTall'),
     Key([], 'w',   lazy.group.setlayout('monadwide'), desc='MonadWide'),
@@ -206,7 +206,7 @@ l_commands = [
 As with layouts this is just some bindings to change the current item, and i
 wonder if i can't come up with something more interesting.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 g_commands = [
     Key([], 'd', lazy.group['Dev'].toscreen(), desc='Open Dev group'),
     Key([], 'h', lazy.group['Home'].toscreen(), desc='Open Home group'),
@@ -224,7 +224,7 @@ duplicate with the mod key added. This is in case we don't actually release the
 leader before pressing the next key, and it not really intended to be used as it
 is.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 chain_root = [
     KeyChord([mod], 'w', w_commands),
     KeyChord([], 'w', w_commands, desc='Windows'),
@@ -270,7 +270,7 @@ chain_root = [
 Here we loop through all of the groups and bind number keys for swapping and
 moving.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 group_keys = []
 for i,g in enumerate(groups):
     group_keys.extend([
@@ -293,7 +293,7 @@ chain_root[0:0] = group_keys
 
 *** Actual root
 And this is the where we add our leader to Qtiles keys list.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 
 keys = [
     Key([mod, "control"], "r", lazy.restart(), desc="Restart qtile"),
@@ -307,7 +307,7 @@ keys = [
 *** Mouse actions
 While technically not keybindings i sort of feel these belong here. I don't
 actually use them. they are just here to remind me that it's an option.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 mouse = [
     Drag([mod], "Button1", lazy.window.set_position_floating(),
          start=lazy.window.get_position()),
@@ -320,7 +320,7 @@ mouse = [
 ** Layouts
 This is where we define layouts. not an aweful lot to tell. perhaps that's a
 sign that i'm not taking proper advantage of the system.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 layouts = [
     layout.Max(),
     layout.Stack(border_width=2, num_stacks=2, border_focus=gruvbux['blue']),
@@ -339,7 +339,7 @@ layouts = [
 #+END_SRC
 
 The float rules decide which programs are automatically floating upon spawning.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 floating_layout = layout.Floating(float_rules=[
     # Run the utility of `xprop` to see the wm class and name of an X client.
     {'wmclass': 'confirm'},
@@ -365,7 +365,7 @@ I currently only have a single screen and i only use a single bar so they go
 together for now. One possibility however could be to make several different
 bars, and then change them out depending on current mode.
 
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 screens = [
     Screen(
         top=bar.Bar(
@@ -413,7 +413,7 @@ Here are some functions that hook into the qtile event loop. They mostly just
 run some scripts at startup and sends browser windows to appropriate groups.
 *** Client new
 Called whenever a new client is spawned.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 @hook.subscribe.client_new
 def client_new(client: window.Window):
     global wkwidget
@@ -423,7 +423,7 @@ def client_new(client: window.Window):
 
 *** Startup once
 Runs a single time on qtile startup ie. not upon restarting qtile.
-#+BEGIN_SRC python :tangle test_config.py
+#+BEGIN_SRC python :tangle config.py
 @hook.subscribe.startup
 def init():
     startup_script_path = os.path.expanduser('~/.config/qtile/startup.sh')

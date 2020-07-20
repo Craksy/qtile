@@ -1,37 +1,21 @@
-# Copyright (c) 2010 Aldo Cortesi
-# Copyright (c) 2010, 2014 dequis
-# Copyright (c) 2012 Randall Ma
-# Copyright (c) 2012-2014 Tycho Andersen
-# Copyright (c) 2012 Craig Barnes
-# Copyright (c) 2013 horsik
-# Copyright (c) 2013 Tao Sauvage
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
-import glob
-from typing import List  # noqa: F401
-from itertools import chain
+# This is a test
 from libqtile import window, bar, layout, widget, extension, hook
-from libqtile.config import Click, Drag, Group, Key, Screen, Match, ScratchPad, DropDown, KeyChord
+from libqtile.config import (
+    Click,
+    Drag,
+    Group,
+    Key,
+    Screen,
+    Match,
+    ScratchPad,
+    DropDown,
+    KeyChord)
 from libqtile.lazy import lazy
 from libqtile.log_utils import logger
-# from libqtile.utils import guess_terminal
+from libqtile.utils import guess_terminal
+
+import glob
+from typing import List
 import subprocess
 from subprocess import call
 import os
@@ -39,19 +23,33 @@ import pynvim
 import datetime
 from bitstring import BitString
 from pynput import keyboard
-# from whichkey import WhichKey
+from itertools import chain
 from color_themes import gruvbux
 from desktop_widget import WkWidget
+
+dgroups_key_binder = None
+dgroups_app_rules = []  # type: List
+main = None
+follow_mouse_focus = True
+bring_front_click = False
+cursor_warp = False
+auto_fullscreen = True
+focus_on_window_activation = "smart"
+wmname = "LG3D"
 
 interface = None
 current_chord = {}
 mod = "mod4"
 terminal = "konsole"
 wkwidget = None
-
 kboard = keyboard.Controller()
 
-
+widget_defaults = dict(
+    font='FiraCode NF',
+    fontsize=12,
+    padding=3,
+)
+extension_defaults = widget_defaults.copy()
 
 def smart_move(direction=None):
     def __inner__(qtile):
@@ -63,7 +61,6 @@ def smart_move(direction=None):
             'up'   : 'k',
             'down' : 'j',
         }
-
         if "nvim" in cur_win.name:
             kboard.press(keyboard.Key.alt)
             kboard.press(dchars[direction])
@@ -76,11 +73,15 @@ def smart_move(direction=None):
                 mov_fun()
     return __inner__
 
-@hook.subscribe.startup
-def init():
-    startup_script_path = os.path.expanduser('~/.config/qtile/startup.sh')
-    subprocess.call([startup_script_path])
-
+groups = [
+    Group(name="Dev", label="✎ Dev", layout='max'),
+    Group(name="Home", label=" Home", layout='monadtall'),
+    Group(name="Web", label="爵 Web", layout='max'),
+    Group(name="Python", label=" Python", layout="stack"),
+    Group(name="IM", label=" IM"),
+    Group(name="System", label=" Sys", layout='monadtall'),
+    Group(name="Misc", label=" Misc")
+]
 
 resize_commands = [
     Key([], 'l', lazy.layout.grow_main(), desc='Grow main'),
@@ -110,7 +111,6 @@ r_commands = [
     Key([], 'v', lazy.spawn('konsole -e nvim'), desc='Nvim'),
     Key([], 'w', lazy.spawn('konsole -e weechat'), desc='Weechat'),
     Key([], 'q', lazy.spawn('qutebrowser'), desc='Qutebrowser'),
-
 ]
 
 l_commands = [
@@ -170,27 +170,6 @@ chain_root = [
     Key([], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
 ]
 
-keys = [
-    Key([mod, "control"], "r", lazy.restart(), desc="Restart qtile"),
-    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown qtile"),
-
-    KeyChord([], 'Super_L', chain_root),
-    KeyChord([], 'Super_R', chain_root),
-]
-
-# dc = Match(title='Discord')
-
-groups = [
-
-    Group(name="Dev", label="✎ Dev", layout='max'),
-    Group(name="Home", label=" Home", layout='monadtall'),
-    Group(name="Web", label="爵 Web", layout='max'),
-    Group(name="Python", label=" Python", layout="stack"),
-    Group(name="IM", label=" IM"),
-    Group(name="System", label=" Sys", layout='monadtall'),
-    Group(name="Misc", label=" Misc")
-]
-
 group_keys = []
 for i,g in enumerate(groups):
     group_keys.extend([
@@ -210,6 +189,22 @@ for i,g in enumerate(groups):
     ])
 chain_root[0:0] = group_keys
 
+keys = [
+    Key([mod, "control"], "r", lazy.restart(), desc="Restart qtile"),
+    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown qtile"),
+
+    KeyChord([], 'Super_L', chain_root),
+    KeyChord([], 'Super_R', chain_root),
+]
+
+mouse = [
+    Drag([mod], "Button1", lazy.window.set_position_floating(),
+         start=lazy.window.get_position()),
+    Drag([mod], "Button3", lazy.window.set_size_floating(),
+         start=lazy.window.get_size()),
+    Click([mod], "Button2", lazy.window.bring_to_front())
+]
+
 layouts = [
     layout.Max(),
     layout.Stack(border_width=2, num_stacks=2, border_focus=gruvbux['blue']),
@@ -226,13 +221,25 @@ layouts = [
     # layout.Zoomy(),
 ]
 
-widget_defaults = dict(
-    font='FiraCode NF',
-    fontsize=12,
-    padding=3,
-)
-extension_defaults = widget_defaults.copy()
-
+floating_layout = layout.Floating(float_rules=[
+    # Run the utility of `xprop` to see the wm class and name of an X client.
+    {'wmclass': 'confirm'},
+    {'wmclass': 'dialog'},
+    {'wmclass': 'download'},
+    {'wmclass': 'error'},
+    {'wmclass': 'file_progress'},
+    {'wmclass': 'notification'},
+    {'wmclass': 'splash'},
+    {'wmclass': 'toolbar'},
+    {'wmclass': 'confirmreset'},  # gitk
+    {'wmclass': 'makebranch'},  # gitk
+    {'wmclass': 'maketag'},  # gitk
+    {'wname': 'branchdialog'},  # gitk
+    {'wname': 'pinentry'},  # GPG key password entry
+    {'wmclass': 'ssh-askpass'},  # ssh-askpass
+    {'wname': 'WhichKey Widget'},
+    # {'wname': 'Execute D-Bus Method'},
+])
 
 screens = [
     Screen(
@@ -264,7 +271,6 @@ screens = [
                             'toggle']),
                 widget.TextBox('', fontsize=22),
                 widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us'], display_map={'us': 'US', 'us_custom': 'code', 'dk': 'DK'}),
-
                 widget.Systray(),
                 # widget.Sep(),
                 widget.QuickExit(default_text='  ⏻  ',
@@ -276,59 +282,13 @@ screens = [
     ),
 ]
 
-# Drag floating layouts.
-mouse = [
-    Drag([mod], "Button1", lazy.window.set_position_floating(),
-         start=lazy.window.get_position()),
-    Drag([mod], "Button3", lazy.window.set_size_floating(),
-         start=lazy.window.get_size()),
-    Click([mod], "Button2", lazy.window.bring_to_front())
-]
-
-
-dgroups_key_binder = None
-dgroups_app_rules = []  # type: List
-main = None
-follow_mouse_focus = True
-bring_front_click = False
-cursor_warp = False
-floating_layout = layout.Floating(float_rules=[
-    # Run the utility of `xprop` to see the wm class and name of an X client.
-    {'wmclass': 'confirm'},
-    {'wmclass': 'dialog'},
-    {'wmclass': 'download'},
-    {'wmclass': 'error'},
-    {'wmclass': 'file_progress'},
-    {'wmclass': 'notification'},
-    {'wmclass': 'splash'},
-    {'wmclass': 'toolbar'},
-    {'wmclass': 'confirmreset'},  # gitk
-    {'wmclass': 'makebranch'},  # gitk
-    {'wmclass': 'maketag'},  # gitk
-    {'wname': 'branchdialog'},  # gitk
-    {'wname': 'pinentry'},  # GPG key password entry
-    {'wmclass': 'ssh-askpass'},  # ssh-askpass
-    {'wname': 'WhichKey Widget'},
-    # {'wname': 'Execute D-Bus Method'},
-])
-auto_fullscreen = True
-focus_on_window_activation = "smart"
-
-
 @hook.subscribe.client_new
 def client_new(client: window.Window):
     global wkwidget
     if client.name == 'qutebrowser':
         client.togroup('Web')
 
-# XXX: Gasp! We're lying here. In fact, nobody really uses or cares about this
-# string besides java UI toolkits; you can see several discussions on the
-# mailing lists, GitHub issues, and other WM documentation that suggest setting
-# this string if your java app doesn't work correctly. We may as well just lie
-# and say that we're a working one by default.
-#
-# We choose LG3D to maximize irony: it is a 3D non-reparenting WM written in
-# java that happens to be on java's whitelist.
-wmname = "LG3D"
-
-
+@hook.subscribe.startup
+def init():
+    startup_script_path = os.path.expanduser('~/.config/qtile/startup.sh')
+    subprocess.call([startup_script_path])
