@@ -2,6 +2,19 @@
 #+AUTHOR:    Silas Wagner
 #+EMAIL:     craksyw@gmail.com
 
+* Table of Contents :TOC:
+- [[#introduction][Introduction]]
+- [[#configuration][Configuration]]
+  - [[#imports][Imports]]
+  - [[#global-variables-declaration][Global variables declaration]]
+  - [[#nvim-smart-move-function][Nvim smart move function]]
+  - [[#groups][Groups]]
+  - [[#keybindings][Keybindings]]
+  - [[#layouts][Layouts]]
+  - [[#screenbar][Screen/Bar]]
+  - [[#hooks][Hooks]]
+- [[#ideas-for-improvement][Ideas for improvement]]
+
 * Introduction
 +This document is meant as a playground for learning about org modes `tangle`
 feature, which can be used to make literate configs.+
@@ -137,7 +150,7 @@ groups = [
 ]
 #+END_SRC
 
-** Keybindings:
+** Keybindings
 *** Window actions
 **** Resizing
 these keybindings are for resizing windows. possibly we should have a group for
