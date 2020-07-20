@@ -76,9 +76,6 @@ def smart_move(direction=None):
                 mov_fun()
     return __inner__
 
-
-
-
 @hook.subscribe.startup
 def init():
     startup_script_path = os.path.expanduser('~/.config/qtile/startup.sh')
@@ -168,7 +165,9 @@ chain_root = [
         desc="Move left"),
     Key([mod], "l", lazy.function(smart_move("right")),
         desc="Move right"),
-    Key(['control'], 'r', lazy.restart())
+    Key(['control'], 'r', lazy.restart()),
+    Key([mod], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
+    Key([], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
 ]
 
 keys = [
@@ -263,6 +262,9 @@ screens = [
                             'set',
                             'Master',
                             'toggle']),
+                widget.TextBox('', fontsize=22),
+                widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us'], display_map={'us': 'US', 'us_custom': 'code', 'dk': 'DK'}),
+
                 widget.Systray(),
                 # widget.Sep(),
                 widget.QuickExit(default_text='  ⏻  ',
