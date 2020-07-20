@@ -48,6 +48,11 @@ class Container(LayoutComponent):
         if isinstance(item, Container):
             item._configure(self.qtile, self.bar, self.window, self.drawer)
 
+    def finalize(self):
+        for c in self.children:
+            if hasattr(c, 'finalize'):
+                c.finalize()
+
     def clear(self):
         for c in self.children:
             if isinstance(c, Container):

@@ -12,7 +12,6 @@ home to my personal qtile config.
 * Configuration
 an attempt to orgify my current qtile config
 ** Imports
-At some point i'd like to sort these better
 *** Qtile
 Let's grab all the libqtile stuff
 #+BEGIN_SRC python :tangle config.py
@@ -35,6 +34,7 @@ from libqtile.utils import guess_terminal
 
 *** Other imports
 General imports that are not specific to Qtile
+- [ ] this could use some cleaning up
 #+BEGIN_SRC python :tangle config.py
 import glob
 from typing import List
@@ -175,7 +175,7 @@ w_commands = [
 ]
 #+END_SRC
 *** Run Programs
-Not much to say here. Just a buncha `lazy.spawn()` calls, binding my most used
+Not much to say here. Just a buncha ~lazy.spawn()~ calls, binding my most used
 programs to keys.
 
 #+BEGIN_SRC python :tangle config.py
