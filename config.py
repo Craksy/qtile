@@ -73,15 +73,21 @@ def smart_move(direction=None):
                 mov_fun()
     return __inner__
 
-groups = [
-    Group(name="Dev", label="✎ Dev", layout='max'),
-    Group(name="Home", label=" Home", layout='monadtall'),
-    Group(name="Web", label="爵 Web", layout='max'),
-    Group(name="Python", label=" Python", layout="stack"),
-    Group(name="IM", label=" IM"),
-    Group(name="System", label=" Sys", layout='monadtall'),
-    Group(name="Misc", label=" Misc")
-]
+table_test=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["Python", "", "stack"], ["IM", "", "max"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
+# groups = [
+#     Group(name="Dev", label="✎ Dev", layout='max'),
+#     Group(name="Home", label=" Home", layout='monadtall'),
+#     Group(name="Web", label="爵 Web", layout='max'),
+#     Group(name="Python", label=" Python", layout="stack"),
+#     Group(name="IM", label=" IM"),
+#     Group(name="System", label=" Sys", layout='monadtall'),
+#     Group(name="Misc", label=" Misc")
+# ]
+groups = []
+for gname, gicon, glayout in table_test:
+    groups.append(Group(name=gname,
+                        label = f'{gicon} {gname}',
+                        layout=glayout))
 
 resize_commands = [
     Key([], 'l', lazy.layout.grow_main(), desc='Grow main'),
