@@ -13,7 +13,9 @@
   - [[#layouts][Layouts]]
   - [[#screenbar][Screen/Bar]]
   - [[#hooks][Hooks]]
-- [[#ideas-for-improvement][Ideas for improvement]]
+- [[#ideas-for-improvement-02][Ideas for improvement]]
+- [[#custom-classes][Custom classes]]
+- [[#issues-01][Issues]]
 
 * Introduction
 +This document is meant as a playground for learning about org modes `tangle`
@@ -22,8 +24,12 @@ feature, which can be used to make literate configs.+
 This document used to be a playground to learn about ~babel :tangle~ but is now
 home to my personal qtile config.
 
+While github is able to render org documents very well, i strongly recommend
+reading this document using org mode, if you happen to use emacs.
+
 * Configuration
-an attempt to orgify my current qtile config
+The actual config. This is where i organise the code that will be 'tangled' to
+~config.py~
 ** Imports
 *** Qtile
 Let's grab all the libqtile stuff
@@ -91,7 +97,7 @@ kboard = keyboard.Controller()
 
 *** Widget defaults
 Widget defaults are used by everthing on the bar. eventually also my custom
-widgets... i hope.
+widgets... at least that's the plan.
 #+BEGIN_SRC python :tangle config.py
 widget_defaults = dict(
     font='FiraCode NF',
@@ -423,7 +429,7 @@ screens = [
 
 ** Hooks
 Here are some functions that hook into the qtile event loop. They mostly just
-run some scripts at startup and sends browser windows to appropriate groups.
+run some scripts at startup and sends windows to appropriate groups.
 *** Client new
 Called whenever a new client is spawned.
 #+BEGIN_SRC python :tangle config.py
@@ -435,7 +441,7 @@ def client_new(client: window.Window):
 #+END_SRC
 
 *** Startup once
-Runs a single time on qtile startup ie. not upon restarting qtile.
+Runs only a single time on qtile startup ie. not upon restarting qtile.
 #+BEGIN_SRC python :tangle config.py
 @hook.subscribe.startup
 def init():
@@ -443,6 +449,21 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
-* Ideas for improvement
-I have some. however, currently they are scattered around the rest of the
-config, or simply not written down yet. I'm gonna write them down Soon™.
+* Ideas for improvement [0/2]
+Features i have not yet implemented in my config, but i feel should be there.
+
+- [ ] i actually do not have any keybindings to send windows to other groups.
+- [ ] My window resize bindings currently only work for the xmonad family of
+  layouts. should be configured for stack/split as well.
+
+* Custom classes
+Nothing here yet. In this section i plan to describe various custom classes and
+widgets that my config uses
+* Issues [0/1]
+Actual bugs and shitty code to be fixed goes here.
+
+- [ ] Currently it seems that only the first level of keybindings (ie. the
+  keybindings that are available after pressing the leader key) allow for
+  modifier inputs. This is probably caused by a bad implementation of my input
+  hack. Perhaps it does not register that we are in a keychord when comming from
+  another keychord.
