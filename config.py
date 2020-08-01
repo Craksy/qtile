@@ -73,7 +73,7 @@ def smart_move(direction=None):
                 mov_fun()
     return __inner__
 
-table_test=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["Python", "", "stack"], ["IM", "", "max"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
+group_table=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["Python", "", "stack"], ["IM", "", "max"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
 # groups = [
 #     Group(name="Dev", label="✎ Dev", layout='max'),
 #     Group(name="Home", label=" Home", layout='monadtall'),
@@ -84,7 +84,7 @@ table_test=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", 
 #     Group(name="Misc", label=" Misc")
 # ]
 groups = []
-for gname, gicon, glayout in table_test:
+for gname, gicon, glayout in group_table:
     groups.append(Group(name=gname,
                         label = f'{gicon} {gname}',
                         layout=glayout))

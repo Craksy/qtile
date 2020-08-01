@@ -155,18 +155,9 @@ cool table stuff
 | Sys        |           | monadtall |
 | Misc       |           | monadtall |
 
-#+BEGIN_SRC python :var table_test=groups_table :colnames yes :tangle config.py
-# groups = [
-#     Group(name="Dev", label="✎ Dev", layout='max'),
-#     Group(name="Home", label=" Home", layout='monadtall'),
-#     Group(name="Web", label="爵 Web", layout='max'),
-#     Group(name="Python", label=" Python", layout="stack"),
-#     Group(name="IM", label=" IM"),
-#     Group(name="System", label=" Sys", layout='monadtall'),
-#     Group(name="Misc", label=" Misc")
-# ]
+#+BEGIN_SRC python :var group_table=groups_table :colnames yes :tangle config.py
 groups = []
-for gname, gicon, glayout in table_test:
+for gname, gicon, glayout in group_table:
     groups.append(Group(name=gname,
                         label = f'{gicon} {gname}',
                         layout=glayout))
