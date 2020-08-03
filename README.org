@@ -1,4 +1,4 @@
-#+TITLE:     Tangle test
+#+TITLE:     Litterate Qtile Configuration
 #+AUTHOR:    Silas Wagner
 #+EMAIL:     craksyw@gmail.com
 
@@ -7,13 +7,12 @@
 - [[#configuration][Configuration]]
   - [[#imports][Imports]]
   - [[#global-variables-declaration][Global variables declaration]]
-  - [[#nvim-smart-move-function][Nvim smart move function]]
   - [[#groups][Groups]]
   - [[#keybindings][Keybindings]]
   - [[#layouts][Layouts]]
   - [[#screenbar][Screen/Bar]]
   - [[#hooks][Hooks]]
-- [[#ideas-for-improvement-02][Ideas for improvement]]
+- [[#ideas-for-improvement-05][Ideas for improvement]]
 - [[#custom-classes][Custom classes]]
 - [[#issues-01][Issues]]
 
@@ -24,8 +23,8 @@ feature, which can be used to make literate configs.+
 This document used to be a playground to learn about ~babel :tangle~ but is now
 home to my personal qtile config.
 
-While github is able to render org documents very well, i strongly recommend
-reading this document using org mode, if you happen to use emacs.
+While github is able to render org documents very well, if you're using emacs, i
+strongly recommend reading this document in org mode.
 
 * Configuration
 The actual config. This is where i organise the code that will be 'tangled' to
@@ -55,7 +54,6 @@ from libqtile.utils import guess_terminal
 General imports that are not specific to Qtile
 - [ ] this could use some cleaning up
 #+BEGIN_SRC python :tangle config.py
-import glob
 from typing import List
 import subprocess
 from subprocess import call
@@ -98,6 +96,7 @@ kboard = keyboard.Controller()
 *** Widget defaults
 Widget defaults are used by everthing on the bar. eventually also my custom
 widgets... at least that's the plan.
+
 #+BEGIN_SRC python :tangle config.py
 widget_defaults = dict(
     font='FiraCode NF',
@@ -106,33 +105,6 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 #+END_SRC
-** Nvim smart move function
-A function which provides seamless movement between nvim and qtile windows. If i
-keep being this impressed with emacs, this will probably be deprecated soon.
-
-#+BEGIN_SRC python :tangle config.py
-def smart_move(direction=None):
-    def __inner__(qtile):
-        cur_win = qtile.current_window
-        cur_lay = qtile.current_layout
-        dchars = {
-            'left': 'h',
-            'right': 'l',
-            'up'   : 'k',
-            'down' : 'j',
-        }
-        if "nvim" in cur_win.name:
-            kboard.press(keyboard.Key.alt)
-            kboard.press(dchars[direction])
-            kboard.release(keyboard.Key.alt)
-            kboard.release(dchars[direction])
-        else:
-            fname = "cmd_"+direction
-            if hasattr(cur_lay, fname):
-                mov_fun = getattr(cur_lay, fname)
-                mov_fun()
-    return __inner__
-#+END_SRC
 
 ** Groups
 These are workspaces. a place where a certain type of programs belong or a
@@ -140,11 +112,7 @@ place that supports a certain type of workflow. For example the place where all
 IM programs live, or a space for development with a large editor window along
 with two small windows for REPL and logging.
 
-Since my config is gonna be all prettied up in this org doc, i might do some
-nicer formatting than just defining them all in a list. Perhaps do some of that
-cool table stuff
-
-#+name: groups_table
+#+name:groups_table
 | Group Name | Label icon | layout    |
 |------------+------------+-----------|
 | Dev        | ✎          | max       |
@@ -155,15 +123,18 @@ cool table stuff
 | Sys        |           | monadtall |
 | Misc       |           | monadtall |
 
-#+BEGIN_SRC python :var group_table=groups_table :colnames yes :tangle config.py
-groups = []
-for gname, gicon, glayout in group_table:
-    groups.append(Group(name=gname,
-                        label = f'{gicon} {gname}',
-                        layout=glayout))
-#+END_SRC
+Here i append a ~Group()~ object to the ~groups~ list for each entry in the
+table above. The label of each group id the icon and name of the group seperated
+by a space.
 
-#+RESULTS:
+#+BEGIN_SRC python :var group_table=groups_table :colnames yes :tangle config.py
+groups = [
+    Group(name=n, label = f'{ic} {n}', layout=la) for n, ic, la in group_table
+]
+
+#+END_SRC
+at this point it would've probably been prettier to just use a regular loop. i
+do love me some list comprehensions though
 
 ** Keybindings
 *** Window actions
@@ -180,7 +151,8 @@ resize_commands = [
 #+END_SRC
 
 **** Moving
-Bindings for moving windows around the screen. as with resizing perhaps this
+Bindings for moving windows around the screen. as with resizing perhaps t
+is
 should be specific to each layout.
 
 #+BEGIN_SRC python :tangle config.py
@@ -324,9 +296,6 @@ And this is the where we add our leader to Qtiles keys list.
 #+BEGIN_SRC python :tangle config.py
 
 keys = [
-    Key([mod, "control"], "r", lazy.restart(), desc="Restart qtile"),
-    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown qtile"),
-
     KeyChord([], 'Super_L', chain_root),
     KeyChord([], 'Super_R', chain_root),
 ]
@@ -458,12 +427,15 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
-* Ideas for improvement [0/2]
+* Ideas for improvement [0/5]
 Features i have not yet implemented in my config, but i feel should be there.
 
 - [ ] i actually do not have any keybindings to send windows to other groups.
 - [ ] My window resize bindings currently only work for the xmonad family of
   layouts. should be configured for stack/split as well.
+- [ ] Add more color schemes than gruvbox.
+- [ ] Put a delay on the which-key widget.
+- [ ] add key bindings to change keyboard layout.
 
 * Custom classes
 Nothing here yet. In this section i plan to describe various custom classes and

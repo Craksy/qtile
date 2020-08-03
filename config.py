@@ -14,7 +14,6 @@ from libqtile.lazy import lazy
 from libqtile.log_utils import logger
 from libqtile.utils import guess_terminal
 
-import glob
 from typing import List
 import subprocess
 from subprocess import call
@@ -51,43 +50,9 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
-def smart_move(direction=None):
-    def __inner__(qtile):
-        cur_win = qtile.current_window
-        cur_lay = qtile.current_layout
-        dchars = {
-            'left': 'h',
-            'right': 'l',
-            'up'   : 'k',
-            'down' : 'j',
-        }
-        if "nvim" in cur_win.name:
-            kboard.press(keyboard.Key.alt)
-            kboard.press(dchars[direction])
-            kboard.release(keyboard.Key.alt)
-            kboard.release(dchars[direction])
-        else:
-            fname = "cmd_"+direction
-            if hasattr(cur_lay, fname):
-                mov_fun = getattr(cur_lay, fname)
-                mov_fun()
-    return __inner__
-
-group_table=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["Python", "", "stack"], ["IM", "", "max"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
-# groups = [
-#     Group(name="Dev", label="✎ Dev", layout='max'),
-#     Group(name="Home", label=" Home", layout='monadtall'),
-#     Group(name="Web", label="爵 Web", layout='max'),
-#     Group(name="Python", label=" Python", layout="stack"),
-#     Group(name="IM", label=" IM"),
-#     Group(name="System", label=" Sys", layout='monadtall'),
-#     Group(name="Misc", label=" Misc")
-# ]
-groups = []
-for gname, gicon, glayout in group_table:
-    groups.append(Group(name=gname,
-                        label = f'{gicon} {gname}',
-                        layout=glayout))
+groups = [
+    Group(name=n, label = f'{ic} {n}', layout=la) for n, ic, la in group_table
+]
 
 resize_commands = [
     Key([], 'l', lazy.layout.grow_main(), desc='Grow main'),
@@ -196,9 +161,6 @@ for i,g in enumerate(groups):
 chain_root[0:0] = group_keys
 
 keys = [
-    Key([mod, "control"], "r", lazy.restart(), desc="Restart qtile"),
-    Key([mod, "control"], "q", lazy.shutdown(), desc="Shutdown qtile"),
-
     KeyChord([], 'Super_L', chain_root),
     KeyChord([], 'Super_R', chain_root),
 ]
