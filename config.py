@@ -66,6 +66,23 @@ win_move_commands = [
     Key([], 'k', lazy.layout.shuffle_up(), desc='shuffle down'),
 ]
 
+to_group_commands = [
+    Key([], '1', lazy.window.togroup('Dev', switch_group=True)),
+    Key([], '2', lazy.window.togroup('Home', switch_group=True)),
+    Key([], '3', lazy.window.togroup('Web', switch_group=True)),
+    Key([], '4', lazy.window.togroup('Python', switch_group=True)),
+    Key([], '5', lazy.window.togroup('IM', switch_group=True)),
+    Key([], '6', lazy.window.togroup('Sys', switch_group=True)),
+    Key([], '7', lazy.window.togroup('Misc', switch_group=True)),
+    Key([], 'd', lazy.window.togroup('Dev', switch_group=True)),
+    Key([], 'h', lazy.window.togroup('Home', switch_group=True)),
+    Key([], 'w', lazy.window.togroup('Web', switch_group=True)),
+    Key([], 'p', lazy.window.togroup('Python', switch_group=True)),
+    Key([], 'i', lazy.window.togroup('IM', switch_group=True)),
+    Key([], 's', lazy.window.togroup('Sys', switch_group=True)),
+    Key([], 'm', lazy.window.togroup('Misc', switch_group=True)),
+]
+
 w_commands = [
     Key([], 'q', lazy.window.kill(), desc='Kill'),
     Key([], 'space', lazy.window.toggle_fullscreen(), desc='Toggle fullscreen'),
@@ -74,6 +91,8 @@ w_commands = [
     KeyChord([], 'r', resize_commands, desc='Resize', mode='Resize'),
     KeyChord([mod], 'm', win_move_commands, mode='Win Move'),
     KeyChord([], 'm', win_move_commands, desc='Move', mode='Win Move'),
+    KeyChord([mod], 's', to_group_commands),
+    KeyChord([], 's', to_group_commands, desc='Send to Group'),
 ]
 
 r_commands = [

@@ -12,7 +12,7 @@
   - [[#layouts][Layouts]]
   - [[#screenbar][Screen/Bar]]
   - [[#hooks][Hooks]]
-- [[#ideas-for-improvement-05][Ideas for improvement]]
+- [[#ideas-for-improvement-15][Ideas for improvement]]
 - [[#custom-classes][Custom classes]]
 - [[#issues-01][Issues]]
 
@@ -162,6 +162,26 @@ win_move_commands = [
 ]
 #+END_SRC
 
+**** Send to Group
+keybindings to send the current window to another window group.
+#+BEGIN_SRC python :tangle config.py
+to_group_commands = [
+    Key([], '1', lazy.window.togroup('Dev', switch_group=True)),
+    Key([], '2', lazy.window.togroup('Home', switch_group=True)),
+    Key([], '3', lazy.window.togroup('Web', switch_group=True)),
+    Key([], '4', lazy.window.togroup('Python', switch_group=True)),
+    Key([], '5', lazy.window.togroup('IM', switch_group=True)),
+    Key([], '6', lazy.window.togroup('Sys', switch_group=True)),
+    Key([], '7', lazy.window.togroup('Misc', switch_group=True)),
+    Key([], 'd', lazy.window.togroup('Dev', switch_group=True)),
+    Key([], 'h', lazy.window.togroup('Home', switch_group=True)),
+    Key([], 'w', lazy.window.togroup('Web', switch_group=True)),
+    Key([], 'p', lazy.window.togroup('Python', switch_group=True)),
+    Key([], 'i', lazy.window.togroup('IM', switch_group=True)),
+    Key([], 's', lazy.window.togroup('Sys', switch_group=True)),
+    Key([], 'm', lazy.window.togroup('Misc', switch_group=True)),
+]
+#+END_SRC
 **** Root
 #+BEGIN_SRC python :tangle config.py
 w_commands = [
@@ -172,6 +192,8 @@ w_commands = [
     KeyChord([], 'r', resize_commands, desc='Resize', mode='Resize'),
     KeyChord([mod], 'm', win_move_commands, mode='Win Move'),
     KeyChord([], 'm', win_move_commands, desc='Move', mode='Win Move'),
+    KeyChord([mod], 's', to_group_commands),
+    KeyChord([], 's', to_group_commands, desc='Send to Group'),
 ]
 #+END_SRC
 *** Run Programs
@@ -427,10 +449,10 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
-* Ideas for improvement [0/5]
+* Ideas for improvement [1/5]
 Features i have not yet implemented in my config, but i feel should be there.
 
-- [ ] i actually do not have any keybindings to send windows to other groups.
+- [X] i actually do not have any keybindings to send windows to other groups.
 - [ ] My window resize bindings currently only work for the xmonad family of
   layouts. should be configured for stack/split as well.
 - [ ] Add more color schemes than gruvbox.
