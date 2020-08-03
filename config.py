@@ -50,6 +50,7 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
+group_table=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["Python", "", "stack"], ["IM", "", "max"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
 groups = [
     Group(name=n, label = f'{ic} {n}', layout=la) for n, ic, la in group_table
 ]
@@ -120,21 +121,21 @@ chain_root = [
     Key([], 'Return', lazy.spawn(terminal), desc='Launch terminal'),
     Key([mod], 'Return', lazy.spawn(terminal), desc='Launch terminal'),
 
-    Key([], "j", lazy.function(smart_move('down')),
+    Key([], "j", lazy.layout.down(),
         desc="Move down"),
-    Key([], "k", lazy.function(smart_move('up')),
+    Key([], "k", lazy.layout.up(),
         desc="Move up"),
-    Key([], "h", lazy.function(smart_move("left")),
+    Key([], "h", lazy.layout.left(),
         desc="Move left"),
-    Key([], "l", lazy.function(smart_move("right")),
+    Key([], "l", lazy.layout.right(),
         desc="Move right"),
-    Key([mod], "j", lazy.function(smart_move('down')),
+    Key([mod], "j", lazy.layout.down(),
         desc="Move down"),
-    Key([mod], "k", lazy.function(smart_move('up')),
+    Key([mod], "k", lazy.layout.up(),
         desc="Move up"),
-    Key([mod], "h", lazy.function(smart_move("left")),
+    Key([mod], "h", lazy.layout.left(),
         desc="Move left"),
-    Key([mod], "l", lazy.function(smart_move("right")),
+    Key([mod], "l", lazy.layout.right(),
         desc="Move right"),
     Key(['control'], 'r', lazy.restart()),
     Key([mod], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
