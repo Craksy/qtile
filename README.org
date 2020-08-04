@@ -52,7 +52,6 @@ from libqtile.utils import guess_terminal
 
 *** Other imports
 General imports that are not specific to Qtile
-- [ ] this could use some cleaning up
 #+BEGIN_SRC python :tangle config.py
 from typing import List
 import subprocess
@@ -63,7 +62,7 @@ import datetime
 from bitstring import BitString
 from pynput import keyboard
 from itertools import chain
-from color_themes import gruvbux
+from color_themes import gruvbox, Style
 from desktop_widget import WkWidget
 #+END_SRC
 ** Global variables declaration
@@ -91,6 +90,12 @@ mod = "mod4"
 terminal = "konsole"
 wkwidget = None
 kboard = keyboard.Controller()
+current_style = Style(palette=gruvbox,
+                      foreground='fg',
+                      background='bg',
+                      primary='green',
+                      seconary='orange'
+)
 #+END_SRC
 
 *** Widget defaults
@@ -102,6 +107,7 @@ widget_defaults = dict(
     font='FiraCode NF',
     fontsize=12,
     padding=3,
+    foreground= current_style['foreground']
 )
 extension_defaults = widget_defaults.copy()
 #+END_SRC
@@ -132,6 +138,8 @@ groups = [
     Group(name=n, label = f'{ic} {n}', layout=la) for n, ic, la in group_table
 ]
 #+END_SRC
+
+#+RESULTS:
 
 at this point it would've probably been prettier to just use a regular loop. i
 do love me some list comprehensions though
@@ -342,13 +350,13 @@ sign that i'm not taking proper advantage of the system.
 #+BEGIN_SRC python :tangle config.py
 layouts = [
     layout.Max(),
-    layout.Stack(border_width=2, num_stacks=2, border_focus=gruvbux['blue']),
+    layout.Stack(border_width=2, num_stacks=2, border_focus=gruvbox['blue']),
     # Try more layouts by unleashing below layouts.
     layout.Bsp(),
     # layout.Columns(),
     # layout.Matrix(),
-    layout.MonadTall(border_width=2, margin=5, border_focus=gruvbux['orange']),
-    layout.MonadWide(border_width=2, margin=10, border_focus=gruvbux['orange']),
+    layout.MonadTall(border_width=2, margin=5, border_focus=gruvbox['orange']),
+    layout.MonadWide(border_width=2, margin=10, border_focus=gruvbox['orange']),
     # layout.RatioTile(),
     # layout.Tile(),
     # layout.TreeTab(),
@@ -391,9 +399,9 @@ screens = [
             [
                 widget.GroupBox(font="FiraCode Nerd Font",
                                 fontsize=17,
-                                active=gruvbux['green'],
+                                active=gruvbox['green'],
                                 block_highlight_text_color='FFFFFF',
-                                this_current_screen_border=gruvbux['green'],
+                                this_current_screen_border=gruvbox['green'],
                                 highlight_method="block",
                                 rounded=False),
                 widget.Prompt(),
@@ -401,12 +409,12 @@ screens = [
                 WkWidget(),
                 # widget.Notify(),
                 widget.Spacer(),
-                # widget.TaskList(border=gruvbux['orange'], fontsize=16),
-                # widget.MemoryGraph(border_color=gruvbux['purple'],
-                # graph_color=gruvbux['purple'], fill_color='0eb070.0'),
+                # widget.TaskList(border=gruvbox['orange'], fontsize=16),
+                # widget.MemoryGraph(border_color=gruvbox['purple'],
+                # graph_color=gruvbox['purple'], fill_color='0eb070.0'),
                 widget.CPUGraph(type='line'),
                 widget.Clock(format='   %a %d-%m %H:%M   ',
-                             foreground=gruvbux['green']),
+                             foreground=gruvbox['green']),
                 widget.Volume(emoji=False, mute_command=[
                             'amixer',
                             'q',
@@ -418,7 +426,7 @@ screens = [
                 widget.Systray(),
                 # widget.Sep(),
                 widget.QuickExit(default_text='  ⏻  ',
-                                 foreground=gruvbux['red'],
+                                 foreground=gruvbox['red'],
                                  fontsize='15'),
             ],
             24, background="282828"

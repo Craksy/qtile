@@ -1,16 +1,35 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
 
-
 @dataclass
 class Style:
+    palette: dict
     background: str
     foreground: str
-    primary_accent: str
-    secondary_accent: str
+    primary: str
+    secondary: str
+
+    def __getitem__(self, item):
+        if hasattr(self, item):
+            return self.palette[getattr(self, item)]
+        return self.palette[item]
 
 
-gruvbux = {
+dracula = dict(
+    bg ='#282a36',
+    fg ='#f8f8f2',
+    grey = '#44475a',
+    red = '#FF5555',
+    green = '#50fa7b',
+    yellow='#f1fa8c',
+    blue = '#6272a4',
+    purple = '#bd93f9',
+    pink = '#ff79c6',
+    cyan = '#8be9fd',
+    orange = '#ffb86c'
+)
+
+gruvbox = {
     'bg': '#282828',
     'fg': '#ebdbb2',
     'gray': '#928374',
