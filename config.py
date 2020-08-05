@@ -23,7 +23,7 @@ import datetime
 from bitstring import BitString
 from pynput import keyboard
 from itertools import chain
-from color_themes import gruvbox, Style
+from color_themes import gruvbox, Style, dracula
 from desktop_widget import WkWidget
 
 dgroups_key_binder = None
@@ -42,12 +42,19 @@ mod = "mod4"
 terminal = "konsole"
 wkwidget = None
 kboard = keyboard.Controller()
+dstyle = Style(palette=dracula,
+               foreground='white',
+               background='black',
+               primary='blue',
+               secondary='purple'
+)
 current_style = Style(palette=gruvbox,
                       foreground='fg',
                       background='bg',
                       primary='green',
-                      seconary='orange'
+                      secondary='orange'
 )
+current_style = dstyle
 
 widget_defaults = dict(
     font='FiraCode NF',
@@ -202,13 +209,13 @@ mouse = [
 
 layouts = [
     layout.Max(),
-    layout.Stack(border_width=2, num_stacks=2, border_focus=gruvbox['blue']),
+    layout.Stack(border_width=2, num_stacks=2, border_focus=current_style['blue']),
     # Try more layouts by unleashing below layouts.
     layout.Bsp(),
     # layout.Columns(),
     # layout.Matrix(),
-    layout.MonadTall(border_width=2, margin=5, border_focus=gruvbox['orange']),
-    layout.MonadWide(border_width=2, margin=10, border_focus=gruvbox['orange']),
+    layout.MonadTall(border_width=2, margin=5, border_focus=current_style['secondary']),
+    layout.MonadWide(border_width=2, margin=10, border_focus=current_style['secondary']),
     # layout.RatioTile(),
     # layout.Tile(),
     # layout.TreeTab(),
@@ -242,9 +249,9 @@ screens = [
             [
                 widget.GroupBox(font="FiraCode Nerd Font",
                                 fontsize=17,
-                                active=gruvbox['green'],
-                                block_highlight_text_color='FFFFFF',
-                                this_current_screen_border=gruvbox['green'],
+                                active= current_style['primary'],
+                                block_highlight_text_color=current_style['foreground'],
+                                this_current_screen_border= current_style['primary'],
                                 highlight_method="block",
                                 rounded=False),
                 widget.Prompt(),
@@ -252,12 +259,9 @@ screens = [
                 WkWidget(),
                 # widget.Notify(),
                 widget.Spacer(),
-                # widget.TaskList(border=gruvbox['orange'], fontsize=16),
-                # widget.MemoryGraph(border_color=gruvbox['purple'],
-                # graph_color=gruvbox['purple'], fill_color='0eb070.0'),
                 widget.CPUGraph(type='line'),
                 widget.Clock(format='   %a %d-%m %H:%M   ',
-                             foreground=gruvbox['green']),
+                             foreground=current_style['primary']),
                 widget.Volume(emoji=False, mute_command=[
                             'amixer',
                             'q',
@@ -269,10 +273,10 @@ screens = [
                 widget.Systray(),
                 # widget.Sep(),
                 widget.QuickExit(default_text='  ⏻  ',
-                                 foreground=gruvbox['red'],
+                                 foreground=current_style['red'],
                                  fontsize='15'),
             ],
-            24, background="282828"
+            24, background=current_style['background']
         ),
     ),
 ]

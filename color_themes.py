@@ -14,10 +14,9 @@ class Style:
             return self.palette[getattr(self, item)]
         return self.palette[item]
 
-
 dracula = dict(
-    bg ='#282a36',
-    fg ='#f8f8f2',
+    black ='#282a36',
+    white ='#f8f8f2',
     grey = '#44475a',
     red = '#FF5555',
     green = '#50fa7b',
@@ -29,22 +28,22 @@ dracula = dict(
     orange = '#ffb86c'
 )
 
-gruvbox = {
-    'bg': '#282828',
-    'fg': '#ebdbb2',
-    'gray': '#928374',
-    'red':      '#cc241d',
-    'green':    '#98971a',
-    'yellow':   '#d77921',
-    'blue':     '#458588',
-    'purple':   '#b16286',
-    'aqua':     '#689d6a',
-    'orange':   '#d65d0e',
-    'red2':     '#fb4934',
-    'green2':   '#b8bb26',
-    'yellow2':  '#fabd2f',
-    'blue2':    '#83a598',
-    'purple2':  '#d3869b',
-    'aqua2':    '#8ec07c',
-    'orange2':  '#fe8019'
-}
+gruvbox = dict(
+    bg = '#282828',
+    fg = '#ebdbb2',
+    gray = '#928374',
+    red =      '#cc241d',
+    green =    '#98971a',
+    yellow =   '#d77921',
+    blue =     '#458588',
+    purple =   '#b16286',
+    aqua =     '#689d6a',
+    orange =   '#d65d0e',
+    red2 =     '#fb4934',
+    green2 =   '#b8bb26',
+    yellow2 =  '#fabd2f',
+    blue2 =    '#83a598',
+    purple2 =  '#d3869b',
+    aqua2 =    '#8ec07c',
+    orange2 =  '#fe8019'
+)

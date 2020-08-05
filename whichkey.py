@@ -5,7 +5,7 @@ from libqtile.widget.base import ThreadPoolText, _TextBox, _Widget
 from libqtile import hook, window, bar, drawer, configurable
 from libqtile.config import Screen, KeyChord, Key
 from boxlayout import VBoxLayout, HBoxLayout
-from color_themes import gruvbux
+from color_themes import gruvbox
 
 class VSep:
     def __init__(self, drawer, color, height, thickness):
@@ -36,7 +36,7 @@ class WhichKey(_Widget):
         return 1
 
     def draw(self):
-        self.drawer.clear(gruvbux['bg'])
+        self.drawer.clear(gruvbox['bg'])
         self.layout.draw(0,0)
         self.drawer.draw()
 
@@ -87,17 +87,17 @@ class WhichKey(_Widget):
             hw = 0
             for m in c:
                 key_label = self.drawer.textlayout(m.key,
-                                                   gruvbux['green'],
+                                                   gruvbox['green'],
                                                    'sans', 12,
                                                    None, True)
                 if isinstance(m, KeyChord):
-                    dcolor = gruvbux['orange']
+                    dcolor = gruvbox['orange']
                     dtext = '﬌ ' + m.desc
                 elif m.desc.startswith('$'):
-                    dcolor = gruvbux['blue']
+                    dcolor = gruvbox['blue']
                     dtext = ' ' + m.desc[1:]
                 else:
-                    dcolor = gruvbux['fg']
+                    dcolor = gruvbox['fg']
                     dtext = '⇒ ' + m.desc
 
                 desc_label = self.drawer.textlayout(dtext,
@@ -114,7 +114,7 @@ class WhichKey(_Widget):
                 r.min_width = hw
             if i < len(columns)-1:
                 self.layout.add_child(VSep(self.drawer,
-                                        gruvbux['gray'],
+                                        gruvbox['gray'],
                                         cur_column.height, 2))
 
         self.winwidth = self.layout.width

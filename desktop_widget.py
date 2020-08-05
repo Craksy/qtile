@@ -3,7 +3,7 @@ from libqtile.log_utils import logger
 from libqtile.widget.base import _Widget
 from libqtile.config import Key, KeyChord
 from libqtile import window, drawer, hook
-from color_themes import gruvbux
+from color_themes import gruvbox
 from whichkey import VSep
 import boxlayout
 from boxlayout import HBLayout, VBLayout
@@ -26,7 +26,7 @@ class DesktopWidget(_Widget):
         return 1
 
     def draw(self):
-        self.drawer.clear(gruvbux['bg'])
+        self.drawer.clear(gruvbox['bg'])
         self.layout.draw(0,0)
         self.drawer.draw()
 
@@ -85,17 +85,17 @@ class WkWidget(DesktopWidget):
             hw = 0
             for m in c:
                 key_label = self.drawer.textlayout(m.key,
-                                                   gruvbux['green'],
+                                                   gruvbox['green'],
                                                    'sans', 12,
                                                    None, True)
                 if isinstance(m, KeyChord):
-                    dcolor = gruvbux['orange']
+                    dcolor = gruvbox['orange']
                     dtext = '﬌ ' + m.desc
                 elif m.desc.startswith('$'):
-                    dcolor = gruvbux['blue']
+                    dcolor = gruvbox['blue']
                     dtext = ' ' + m.desc[1:]
                 else:
-                    dcolor = gruvbux['fg']
+                    dcolor = gruvbox['fg']
                     dtext = '⇒ ' + m.desc
 
                 desc_label = self.drawer.textlayout(dtext,
@@ -112,7 +112,7 @@ class WkWidget(DesktopWidget):
                 r.min_width = hw
             if i < len(columns)-1:
                 self.layout.add_child(VSep(self.drawer,
-                                        gruvbux['gray'],
+                                        gruvbox['gray'],
                                         cur_column.height, 2))
 
         self.winwidth = self.layout.width
