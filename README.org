@@ -12,7 +12,7 @@
   - [[#layouts][Layouts]]
   - [[#screenbar][Screen/Bar]]
   - [[#hooks][Hooks]]
-- [[#ideas-for-improvement-25][Ideas for improvement]]
+- [[#ideas-for-improvement-37][Ideas for improvement]]
 - [[#custom-classes][Custom classes]]
 - [[#issues-01][Issues]]
 
@@ -25,6 +25,8 @@ home to my personal qtile config.
 
 While github is able to render org documents very well, if you're using emacs, i
 strongly recommend reading this document in org mode.
+
+i keep some additional notes in [[file:../../org/roam/20200801222022-litterate_qtile_config.org][litterate qtile config]]
 
 * Configuration
 The actual config. This is where i organise the code that will be 'tangled' to
@@ -50,6 +52,9 @@ from libqtile.log_utils import logger
 from libqtile.utils import guess_terminal
 #+END_SRC
 
+
+: None
+
 *** Other imports
 General imports that are not specific to Qtile
 #+BEGIN_SRC python :tangle config.py
@@ -65,6 +70,10 @@ from itertools import chain
 from color_themes import gruvbox, Style, dracula
 from desktop_widget import WkWidget
 #+END_SRC
+
+
+: None
+
 ** Global variables declaration
 *** Qtile configuration variables
 Qtile expects these to be here
@@ -79,6 +88,9 @@ auto_fullscreen = True
 focus_on_window_activation = "smart"
 wmname = "LG3D"
 #+END_SRC
+
+
+: None
 
 *** Custom vars
 Misc global variables than needs to be available to the rest of the
@@ -97,12 +109,12 @@ dstyle = Style(palette=dracula,
                secondary='pink'
 )
 gstyle = Style(palette=gruvbox,
-                      foreground='fg',
-                      background='bg',
+                      foreground='white',
+                      background='black',
                       primary='green',
                       secondary='orange'
 )
-current_style = dstyle
+current_style = gstyle
 #+END_SRC
 
 *** Widget defaults
@@ -146,7 +158,7 @@ groups = [
 ]
 #+END_SRC
 
-#+RESULTS:
+
 
 at this point it would've probably been prettier to just use a regular loop. i
 do love me some list comprehensions though
@@ -197,6 +209,7 @@ to_group_commands = [
     Key([], 'm', lazy.window.togroup('Misc', switch_group=True)),
 ]
 #+END_SRC
+
 **** Root
 #+BEGIN_SRC python :tangle config.py
 w_commands = [
@@ -211,6 +224,7 @@ w_commands = [
     KeyChord([], 's', to_group_commands, desc='Send to Group'),
 ]
 #+END_SRC
+
 *** Run Programs
 Not much to say here. Just a buncha ~lazy.spawn()~ calls, binding my most used
 programs to keys.
@@ -219,12 +233,14 @@ programs to keys.
 r_commands = [
     Key([], 'd', lazy.spawn('rofi -show drun'), desc='$Rofi drun'),
     Key([], 'e', lazy.spawn('emacs'), desc='Emacs'),
+    Key([], 'f', lazy.spawn('nautilus'), desc='Files'),
     Key([], 'r', lazy.spawn('konsole -e ranger'), desc='Ranger'),
     Key([], 'v', lazy.spawn('konsole -e nvim'), desc='Nvim'),
-    Key([], 'w', lazy.spawn('konsole -e weechat'), desc='Weechat'),
+    Key([], 'w', lazy.spawn('chromium'), desc='Web (chromium)'),
     Key([], 'q', lazy.spawn('qutebrowser'), desc='Qutebrowser'),
 ]
 #+END_SRC
+
 *** Layout actions
 These are just commands to change the current layout. perhaps more interesting
 things could be done here?
@@ -254,6 +270,15 @@ g_commands = [
 ]
 #+END_SRC
 
+*** Toggles
+A group of keybindings dedicated to toggling or cycling through misc. settings
+
+#+BEGIN_SRC python :tangle config.py
+t_commands = [
+    Key([], 'k', lazy.widget['keyboardlayout'].next_keyboard(), desc='Cycle xkb layouts')
+]
+#+END_SRC
+
 *** Chain root
 This is the root of the "leader key chain", ie. these are the keybindings that
 are first available after pressing the leader key. Most keys here have a
@@ -265,6 +290,8 @@ is.
 chain_root = [
     KeyChord([mod], 'w', w_commands),
     KeyChord([], 'w', w_commands, desc='Windows'),
+    KeyChord([mod], 't', t_commands),
+    KeyChord([], 't', t_commands, desc='Toggles'),
     KeyChord([mod], 'r', r_commands),
     KeyChord([], 'r', r_commands, desc='Run programs'),
     KeyChord([mod], 'm', l_commands),
@@ -372,7 +399,7 @@ layouts = [
 ]
 #+END_SRC
 
-#+RESULTS:
+
 
 The float rules decide which programs are automatically floating upon spawning.
 #+BEGIN_SRC python :tangle config.py
@@ -396,6 +423,7 @@ floating_layout = layout.Floating(float_rules=[
     # {'wname': 'Execute D-Bus Method'},
 ])
 #+END_SRC
+
 ** Screen/Bar
 I currently only have a single screen and i only use a single bar so they go
 together for now. One possibility however could be to make several different
@@ -428,12 +456,12 @@ screens = [
                             'Master',
                             'toggle']),
                 widget.TextBox(' ', fontsize=22),
-                widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us'], display_map={'us': 'US', 'us_custom': 'code', 'dk': 'DK'}),
+                widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
+                                      display_map={'us_custom': 'code', 'dk': 'DK'}),
                 widget.Systray(),
-                # widget.Sep(),
-                widget.QuickExit(default_text=' ⏻ ',
-                                 foreground=current_style['red'],
-                                 fontsize='15'),
+            #     widget.QuickExit(default_text=' ⏻ ',
+            #                      foreground=current_style['red'],
+            #                      fontsize='15'),
             ],
             24, background=current_style['background']
         ),
@@ -463,7 +491,7 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
-* Ideas for improvement [2/5]
+* Ideas for improvement [3/7]
 Features i have not yet implemented in my config, but i feel should be there.
 
 - [X] i actually do not have any keybindings to send windows to other groups.
@@ -471,7 +499,11 @@ Features i have not yet implemented in my config, but i feel should be there.
   layouts. should be configured for stack/split as well.
 - [X] Add more color schemes than gruvbox.
 - [ ] Put a delay on the which-key widget.
-- [ ] add key bindings to change keyboard layout.
+- [X] add key bindings to change keyboard layout.
+- [ ] some sort of collection of styles/themes so i can swap between them.
+  - [ ] make a function to reconfigure the bar with a different theme.
+
+
 
 * Custom classes
 Nothing here yet. In this section i plan to describe various custom classes and

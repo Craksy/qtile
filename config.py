@@ -49,12 +49,12 @@ dstyle = Style(palette=dracula,
                secondary='pink'
 )
 gstyle = Style(palette=gruvbox,
-                      foreground='fg',
-                      background='bg',
+                      foreground='white',
+                      background='black',
                       primary='green',
                       secondary='orange'
 )
-current_style = dstyle
+current_style = gstyle
 
 widget_defaults = dict(
     font='FiraCode NF',
@@ -112,9 +112,10 @@ w_commands = [
 r_commands = [
     Key([], 'd', lazy.spawn('rofi -show drun'), desc='$Rofi drun'),
     Key([], 'e', lazy.spawn('emacs'), desc='Emacs'),
+    Key([], 'f', lazy.spawn('nautilus'), desc='Files'),
     Key([], 'r', lazy.spawn('konsole -e ranger'), desc='Ranger'),
     Key([], 'v', lazy.spawn('konsole -e nvim'), desc='Nvim'),
-    Key([], 'w', lazy.spawn('konsole -e weechat'), desc='Weechat'),
+    Key([], 'w', lazy.spawn('chromium'), desc='Web (chromium)'),
     Key([], 'q', lazy.spawn('qutebrowser'), desc='Qutebrowser'),
 ]
 
@@ -135,9 +136,15 @@ g_commands = [
     Key([], 's', lazy.group['System'].toscreen(), desc='Open System group'),
 ]
 
+t_commands = [
+    Key([], 'k', lazy.widget['keyboardlayout'].next_keyboard(), desc='Cycle xkb layouts')
+]
+
 chain_root = [
     KeyChord([mod], 'w', w_commands),
     KeyChord([], 'w', w_commands, desc='Windows'),
+    KeyChord([mod], 't', t_commands),
+    KeyChord([], 't', t_commands, desc='Toggles'),
     KeyChord([mod], 'r', r_commands),
     KeyChord([], 'r', r_commands, desc='Run programs'),
     KeyChord([mod], 'm', l_commands),
@@ -269,12 +276,12 @@ screens = [
                             'Master',
                             'toggle']),
                 widget.TextBox(' ', fontsize=22),
-                widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us'], display_map={'us': 'US', 'us_custom': 'code', 'dk': 'DK'}),
+                widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
+                                      display_map={'us_custom': 'code', 'dk': 'DK'}),
                 widget.Systray(),
-                # widget.Sep(),
-                widget.QuickExit(default_text=' ⏻ ',
-                                 foreground=current_style['red'],
-                                 fontsize='15'),
+            #     widget.QuickExit(default_text=' ⏻ ',
+            #                      foreground=current_style['red'],
+            #                      fontsize='15'),
             ],
             24, background=current_style['background']
         ),
