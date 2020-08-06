@@ -12,7 +12,7 @@
   - [[#layouts][Layouts]]
   - [[#screenbar][Screen/Bar]]
   - [[#hooks][Hooks]]
-- [[#ideas-for-improvement-15][Ideas for improvement]]
+- [[#ideas-for-improvement-25][Ideas for improvement]]
 - [[#custom-classes][Custom classes]]
 - [[#issues-01][Issues]]
 
@@ -94,9 +94,9 @@ dstyle = Style(palette=dracula,
                foreground='white',
                background='black',
                primary='blue',
-               secondary='purple'
+               secondary='pink'
 )
-current_style = Style(palette=gruvbox,
+gstyle = Style(palette=gruvbox,
                       foreground='fg',
                       background='bg',
                       primary='green',
@@ -372,6 +372,8 @@ layouts = [
 ]
 #+END_SRC
 
+#+RESULTS:
+
 The float rules decide which programs are automatically floating upon spawning.
 #+BEGIN_SRC python :tangle config.py
 floating_layout = layout.Floating(float_rules=[
@@ -413,23 +415,23 @@ screens = [
                                 rounded=False),
                 widget.Prompt(),
                 # widget.Chord(),
-                WkWidget(),
+                WkWidget(style=current_style),
                 # widget.Notify(),
                 widget.Spacer(),
                 # widget.CPUGraph(type='line'),
                 widget.Clock(format='   %a %d-%m %H:%M   ',
-                             foreground=current_style['primary']),
+                             foreground=current_style['secondary']),
                 widget.Volume(emoji=False, mute_command=[
                             'amixer',
                             'q',
                             'set',
                             'Master',
                             'toggle']),
-                widget.TextBox('', fontsize=22),
+                widget.TextBox(' ', fontsize=22),
                 widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us'], display_map={'us': 'US', 'us_custom': 'code', 'dk': 'DK'}),
                 widget.Systray(),
                 # widget.Sep(),
-                widget.QuickExit(default_text='  ⏻  ',
+                widget.QuickExit(default_text=' ⏻ ',
                                  foreground=current_style['red'],
                                  fontsize='15'),
             ],
@@ -461,13 +463,13 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
-* Ideas for improvement [1/5]
+* Ideas for improvement [2/5]
 Features i have not yet implemented in my config, but i feel should be there.
 
 - [X] i actually do not have any keybindings to send windows to other groups.
 - [ ] My window resize bindings currently only work for the xmonad family of
   layouts. should be configured for stack/split as well.
-- [ ] Add more color schemes than gruvbox.
+- [X] Add more color schemes than gruvbox.
 - [ ] Put a delay on the which-key widget.
 - [ ] add key bindings to change keyboard layout.
 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from dataclasses import dataclass
 
+
+
 @dataclass
 class Style:
     palette: dict
@@ -17,7 +19,7 @@ class Style:
 dracula = dict(
     black ='#282a36',
     white ='#f8f8f2',
-    grey = '#44475a',
+    gray = '#44475a',
     red = '#FF5555',
     green = '#50fa7b',
     yellow='#f1fa8c',
@@ -29,8 +31,8 @@ dracula = dict(
 )
 
 gruvbox = dict(
-    bg = '#282828',
-    fg = '#ebdbb2',
+    black = '#282828',
+    white = '#ebdbb2',
     gray = '#928374',
     red =      '#cc241d',
     green =    '#98971a',

@@ -3,7 +3,7 @@ from libqtile.log_utils import logger
 from libqtile.widget.base import _Widget
 from libqtile.config import Key, KeyChord
 from libqtile import window, drawer, hook
-from color_themes import gruvbox
+from color_themes import gruvbox, Style
 from whichkey import VSep
 import boxlayout
 from boxlayout import HBLayout, VBLayout
@@ -21,12 +21,13 @@ class DesktopWidget(_Widget):
         self.length = 0
         self.margin = 5
         self.layout = HBLayout(0,0,0)
+        self.style = None
 
     def calculate_length(self):
         return 1
 
     def draw(self):
-        self.drawer.clear(gruvbox['bg'])
+        self.drawer.clear(self.style['background'])
         self.layout.draw(0,0)
         self.drawer.draw()
 
@@ -62,9 +63,10 @@ class DesktopWidget(_Widget):
     def handle_ButtonRelease(self): ...
 
 class WkWidget(DesktopWidget):
-    def __init__(self):
+    def __init__(self, style):
        DesktopWidget.__init__(self)
        self.layout = HBLayout(15, 10, 0)
+       self.style = style
 
     def _configure(self, qtile, bar):
         DesktopWidget._configure(self, qtile, bar)
@@ -85,17 +87,17 @@ class WkWidget(DesktopWidget):
             hw = 0
             for m in c:
                 key_label = self.drawer.textlayout(m.key,
-                                                   gruvbox['green'],
+                                                   self.style['primary'],
                                                    'sans', 12,
                                                    None, True)
                 if isinstance(m, KeyChord):
-                    dcolor = gruvbox['orange']
+                    dcolor = self.style['secondary']
                     dtext = '﬌ ' + m.desc
                 elif m.desc.startswith('$'):
-                    dcolor = gruvbox['blue']
+                    dcolor = self.style['blue']
                     dtext = ' ' + m.desc[1:]
                 else:
-                    dcolor = gruvbox['fg']
+                    dcolor = self.style['foreground']
                     dtext = '⇒ ' + m.desc
 
                 desc_label = self.drawer.textlayout(dtext,
@@ -112,7 +114,7 @@ class WkWidget(DesktopWidget):
                 r.min_width = hw
             if i < len(columns)-1:
                 self.layout.add_child(VSep(self.drawer,
-                                        gruvbox['gray'],
+                                        self.style['gray'],
                                         cur_column.height, 2))
 
         self.winwidth = self.layout.width
