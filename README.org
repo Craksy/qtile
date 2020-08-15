@@ -2,19 +2,44 @@
 #+AUTHOR:    Silas Wagner
 #+EMAIL:     craksyw@gmail.com
 
-* Table of Contents :TOC:
+* Table of Contents :TOC_3:
 - [[#introduction][Introduction]]
 - [[#configuration][Configuration]]
   - [[#imports][Imports]]
-  - [[#global-variables-declaration][Global variables declaration]]
+    - [[#qtile][Qtile]]
+    - [[#other-imports][Other imports]]
+  - [[#definitions][Definitions]]
+    - [[#qtile-configuration-variables][Qtile configuration variables]]
+    - [[#themes][Themes]]
+    - [[#widget-defaults][Widget defaults]]
+  - [[#functions][Functions]]
+    - [[#create_bar][create_bar]]
+    - [[#set_theme][set_theme]]
   - [[#groups][Groups]]
   - [[#keybindings][Keybindings]]
+    - [[#window-actions][Window actions]]
+    - [[#run-programs][Run Programs]]
+    - [[#layout-actions][Layout actions]]
+    - [[#group-actions][Group actions]]
+    - [[#toggles][Toggles]]
+    - [[#chain-root][Chain root]]
+    - [[#actual-root][Actual root]]
+    - [[#mouse-actions][Mouse actions]]
   - [[#layouts][Layouts]]
+  - [[#widgets][Widgets]]
+    - [[#groupbox][GroupBox]]
+    - [[#which-key][Which-key]]
+    - [[#volume][Volume]]
+    - [[#keyboardlayout][KeyboardLayout]]
   - [[#screenbar][Screen/Bar]]
   - [[#hooks][Hooks]]
-- [[#ideas-for-improvement-37][Ideas for improvement]]
+    - [[#client-new][Client new]]
+    - [[#startup-once][Startup once]]
+- [[#ideas-for-improvement-57][Ideas for improvement]]
 - [[#custom-classes][Custom classes]]
-- [[#issues-01][Issues]]
+- [[#issues-02][Issues]]
+  - [[#--fix-modifiers][[ ] Fix modifiers]]
+  - [[#--the-bar-and-all-widgets-duplicates-upon-switching-themes][[ ] the bar and all widgets duplicates upon switching themes]]
 
 * Introduction
 +This document is meant as a playground for learning about org modes `tangle`
@@ -52,9 +77,6 @@ from libqtile.log_utils import logger
 from libqtile.utils import guess_terminal
 #+END_SRC
 
-
-: None
-
 *** Other imports
 General imports that are not specific to Qtile
 #+BEGIN_SRC python :tangle config.py
@@ -67,14 +89,11 @@ import datetime
 from bitstring import BitString
 from pynput import keyboard
 from itertools import chain
-from color_themes import gruvbox, Style, dracula
+from color_themes import gruvbox, Style, dracula, solarized, monokai
 from desktop_widget import WkWidget
 #+END_SRC
 
-
-: None
-
-** Global variables declaration
+** Definitions
 *** Qtile configuration variables
 Qtile expects these to be here
 #+BEGIN_SRC python :tangle config.py
@@ -89,32 +108,47 @@ focus_on_window_activation = "smart"
 wmname = "LG3D"
 #+END_SRC
 
-
-: None
-
-*** Custom vars
 Misc global variables than needs to be available to the rest of the
 code.
 #+BEGIN_SRC python :tangle config.py
-interface = None
-current_chord = {}
 mod = "mod4"
 terminal = "konsole"
-wkwidget = None
-kboard = keyboard.Controller()
-dstyle = Style(palette=dracula,
-               foreground='white',
-               background='black',
-               primary='blue',
-               secondary='pink'
-)
-gstyle = Style(palette=gruvbox,
+#+END_SRC
+*** Themes
+#+BEGIN_SRC python :tangle config.py
+styles = {
+    'dracula': Style(palette=dracula,
+                     foreground='white',
+                     background='black',
+                     primary='blue',
+                     secondary='pink',
+                     tetriary='purple',
+    ),
+    'gruvbox' : Style(palette=gruvbox,
                       foreground='white',
                       background='black',
                       primary='green',
-                      secondary='orange'
-)
-current_style = gstyle
+                      secondary='orange',
+                      tetriary='blue',
+    ),
+    'solarized' : Style(palette=solarized,
+                        foreground='white',
+                        background='black',
+                        primary='green',
+                        secondary='blue',
+                        tetriary='orange'
+    ),
+    'monokai' : Style(palette=monokai,
+                        foreground='white',
+                        background='black',
+                        primary='pink',
+                        secondary='green',
+                        tetriary='orange'
+    ),
+
+
+}
+current_style = styles['dracula']
 #+END_SRC
 
 *** Widget defaults
@@ -126,9 +160,67 @@ widget_defaults = dict(
     font='FiraCode NF',
     fontsize=12,
     padding=3,
-    foreground= current_style['foreground']
+    foreground=current_style['foreground']
 )
 extension_defaults = widget_defaults.copy()
+#+END_SRC
+
+** Functions
+*** create_bar
+#+BEGIN_SRC python :tangle config.py
+def create_bar(qtile = None):
+    global current_style
+    print(current_style)
+    main_bar = bar.Bar(
+        [
+            widget.GroupBox(fontsize=17,
+                            active=current_style['primary'],
+                            block_highlight_text_color=current_style['foreground'],
+                            this_current_screen_border=current_style['primary'],
+                            highlight_method="block",
+                            rounded=False),
+            widget.Prompt(),
+            WkWidget(style=current_style),
+            widget.Spacer(),
+            widget.Clock(format='   %a %d-%m %H:%M   ',
+                         foreground=current_style['secondary']),
+
+            widget.Volume(emoji=False, mute_command=[
+                        'amixer',
+                        'q',
+                        'set',
+                        'Master',
+                        'toggle']),
+            widget.TextBox(' ', fontsize=22),
+            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
+                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
+            widget.Systray(),
+        ], 24, background=current_style['background']
+    )
+
+    if qtile is None:
+        return main_bar
+    if qtile.current_screen:
+        for w in qtile.current_screen.top.widgets:
+            print('lol', w)
+            del w
+        del qtile.current_screen.top
+    qtile.current_screen.top = main_bar
+    qtile.current_screen.resize()
+#+END_SRC
+
+*** set_theme
+#+BEGIN_SRC python :tangle config.py
+def set_theme(theme_name):
+    def __inner__(qtile):
+        global current_style
+        if theme_name in styles:
+            current_style = styles[theme_name]
+            create_bar(qtile)
+        else:
+            raise Exception('Unrecognized theme {}'.format(theme_name))
+    print(current_style)
+    return __inner__
 #+END_SRC
 
 ** Groups
@@ -158,10 +250,17 @@ groups = [
 ]
 #+END_SRC
 
-
-
 at this point it would've probably been prettier to just use a regular loop. i
 do love me some list comprehensions though
+
+
+#+BEGIN_SRC python :tangle config.py
+groups.append(ScratchPad("scratchpad", [
+    DropDown("term", "konsole", opacity=0.8)
+]))
+#+END_SRC
+
+#+RESULTS:
 
 ** Keybindings
 *** Window actions
@@ -249,6 +348,7 @@ things could be done here?
 l_commands = [
     Key([], 'm',   lazy.group.setlayout('monadtall'), desc='MonadTall'),
     Key([], 'w',   lazy.group.setlayout('monadwide'), desc='MonadWide'),
+    Key(['shift'], 'm',   lazy.group.setlayout('monadwide'), desc='MonadWide'),
     Key([], 'z',   lazy.group.setlayout('max'), desc='Zoom (max)'),
     Key([], 's',   lazy.group.setlayout('stack'), desc='Stack'),
     Key([], 'Tab', lazy.next_layout(), desc='Next layout'),
@@ -272,10 +372,22 @@ g_commands = [
 
 *** Toggles
 A group of keybindings dedicated to toggling or cycling through misc. settings
+**** Theme switch
+#+BEGIN_SRC python :tangle config.py
+theme_switch_commands = [
+    Key([], 'g', lazy.function(set_theme('gruvbox')), desc='Gruvbox'),
+    Key([], 'd', lazy.function(set_theme('dracula')), desc='Dracula'),
+    Key([], 's', lazy.function(set_theme('solarized')), desc='Solarized'),
+    Key([], 'm', lazy.function(set_theme('monokai')), desc='Monokai'),
+]
+#+END_SRC
 
+**** Toggles root
 #+BEGIN_SRC python :tangle config.py
 t_commands = [
-    Key([], 'k', lazy.widget['keyboardlayout'].next_keyboard(), desc='Cycle xkb layouts')
+    Key([], 'k', lazy.widget['keyboardlayout'].next_keyboard(), desc='Cycle xkb layouts'),
+    Key([], 't', lazy.group['scratchpad'].dropdown_toggle('term'), desc='dropdown term'),
+    KeyChord([], 's', theme_switch_commands, desc='Styles'),
 ]
 #+END_SRC
 
@@ -337,6 +449,8 @@ moving.
 #+BEGIN_SRC python :tangle config.py
 group_keys = []
 for i,g in enumerate(groups):
+    if g.label == '':
+        continue
     group_keys.extend([
         # mod1 + letter of group = switch to group
         Key([], str(i+1), lazy.group[g.name].toscreen(),
@@ -384,7 +498,7 @@ sign that i'm not taking proper advantage of the system.
 #+BEGIN_SRC python :tangle config.py
 layouts = [
     layout.Max(),
-    layout.Stack(border_width=2, num_stacks=2, border_focus=current_style['blue']),
+    layout.Stack(border_width=2, num_stacks=2, border_focus=current_style['tetriary']),
     # Try more layouts by unleashing below layouts.
     layout.Bsp(),
     # layout.Columns(),
@@ -398,7 +512,6 @@ layouts = [
     # layout.Zoomy(),
 ]
 #+END_SRC
-
 
 
 The float rules decide which programs are automatically floating upon spawning.
@@ -424,6 +537,20 @@ floating_layout = layout.Floating(float_rules=[
 ])
 #+END_SRC
 
+** Widgets
+*** GroupBox
+#+BEGIN_SRC python :tangle config.py
+groupbox_widget = widget.GroupBox(fontsize=17,
+                           active=current_style['primary'],
+                           block_highlight_text_color=current_style['foreground'],
+                           this_current_screen_border=current_style['primary'],
+                           highlight_method="block",
+                           rounded=False
+)
+#+END_SRC
+*** Which-key
+*** Volume
+*** KeyboardLayout
 ** Screen/Bar
 I currently only have a single screen and i only use a single bar so they go
 together for now. One possibility however could be to make several different
@@ -431,41 +558,7 @@ bars, and then change them out depending on current mode.
 
 #+BEGIN_SRC python :tangle config.py
 screens = [
-    Screen(
-        top=bar.Bar(
-            [
-                widget.GroupBox(font="FiraCode Nerd Font",
-                                fontsize=17,
-                                active= current_style['primary'],
-                                block_highlight_text_color=current_style['foreground'],
-                                this_current_screen_border= current_style['primary'],
-                                highlight_method="block",
-                                rounded=False),
-                widget.Prompt(),
-                # widget.Chord(),
-                WkWidget(style=current_style),
-                # widget.Notify(),
-                widget.Spacer(),
-                # widget.CPUGraph(type='line'),
-                widget.Clock(format='   %a %d-%m %H:%M   ',
-                             foreground=current_style['secondary']),
-                widget.Volume(emoji=False, mute_command=[
-                            'amixer',
-                            'q',
-                            'set',
-                            'Master',
-                            'toggle']),
-                widget.TextBox(' ', fontsize=22),
-                widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
-                                      display_map={'us_custom': 'code', 'dk': 'DK'}),
-                widget.Systray(),
-            #     widget.QuickExit(default_text=' ⏻ ',
-            #                      foreground=current_style['red'],
-            #                      fontsize='15'),
-            ],
-            24, background=current_style['background']
-        ),
-    ),
+    Screen(top=create_bar()),
 ]
 #+END_SRC
 
@@ -491,7 +584,7 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
-* Ideas for improvement [3/7]
+* Ideas for improvement [5/7]
 Features i have not yet implemented in my config, but i feel should be there.
 
 - [X] i actually do not have any keybindings to send windows to other groups.
@@ -500,19 +593,23 @@ Features i have not yet implemented in my config, but i feel should be there.
 - [X] Add more color schemes than gruvbox.
 - [ ] Put a delay on the which-key widget.
 - [X] add key bindings to change keyboard layout.
-- [ ] some sort of collection of styles/themes so i can swap between them.
-  - [ ] make a function to reconfigure the bar with a different theme.
-
-
+- [X] some sort of collection of styles/themes so i can swap between them.
+- [X] make a function to reconfigure the bar with a different theme.
+- [ ] Have a dropdown terminal
+- [ ] Find a way to have more features available through qtilecmd
 
 * Custom classes
 Nothing here yet. In this section i plan to describe various custom classes and
 widgets that my config uses
-* Issues [0/1]
+* Issues [0/2]
 Actual bugs and shitty code to be fixed goes here.
 
-- [ ] Currently it seems that only the first level of keybindings (ie. the
-  keybindings that are available after pressing the leader key) allow for
-  modifier inputs. This is probably caused by a bad implementation of my input
-  hack. Perhaps it does not register that we are in a keychord when comming from
-  another keychord.
+** [ ] Fix modifiers
+currently bindings that include modifier keys are ignored entirely by which-key,
+so that duplicates don't show up twice. However this also prevents bindings with
+intentional modifier keys from being displayed.
+
+Furthermore the current system only display the actual key, and always in
+lowercase
+
+** [ ] the bar and all widgets duplicates upon switching themes

@@ -132,11 +132,9 @@ class VBLayout(Container):
 
 
 
-
-
 # DEPRECATED:
 # these are the old classes for the whichkey widget.
-# i keep them for a while just in case.
+# i'll keep them for a while just in case.
 class Spacer:
     def __init__(self, width, height):
         self.width = width
@@ -174,6 +172,9 @@ class BoxLayout:
                 self.children = []
 
 class HBoxLayout(BoxLayout):
+    """
+    Horizontal box layout.
+    """
     def __init__(self, drawer, xpos=0, ypos=0, spacing=None, margin=0):
         super().__init__(drawer,xpos,ypos,spacing,margin)
         self.min_width = 0

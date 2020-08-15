@@ -76,7 +76,7 @@ class WkWidget(DesktopWidget):
     def create_collumns(self, chord:KeyChord):
         self.layout.clear()
         mappings = [k for k in chord.submapings \
-                    if not (k.modifiers or k.key=='Escape')]
+                    if not (k.modifiers or k.key=='Escape') and k.desc != '']
         cur_row = 0
         min_width = 0
         nrows = 7
@@ -94,7 +94,7 @@ class WkWidget(DesktopWidget):
                     dcolor = self.style['secondary']
                     dtext = '﬌ ' + m.desc
                 elif m.desc.startswith('$'):
-                    dcolor = self.style['blue']
+                    dcolor = self.style['tetriary']
                     dtext = ' ' + m.desc[1:]
                 else:
                     dcolor = self.style['foreground']

@@ -23,7 +23,7 @@ import datetime
 from bitstring import BitString
 from pynput import keyboard
 from itertools import chain
-from color_themes import gruvbox, Style, dracula
+from color_themes import gruvbox, Style, dracula, solarized, monokai
 from desktop_widget import WkWidget
 
 dgroups_key_binder = None
@@ -36,38 +36,110 @@ auto_fullscreen = True
 focus_on_window_activation = "smart"
 wmname = "LG3D"
 
-interface = None
-current_chord = {}
 mod = "mod4"
 terminal = "konsole"
-wkwidget = None
-kboard = keyboard.Controller()
-dstyle = Style(palette=dracula,
-               foreground='white',
-               background='black',
-               primary='blue',
-               secondary='pink'
-)
-gstyle = Style(palette=gruvbox,
+
+styles = {
+    'dracula': Style(palette=dracula,
+                     foreground='white',
+                     background='black',
+                     primary='blue',
+                     secondary='pink',
+                     tetriary='purple',
+    ),
+    'gruvbox' : Style(palette=gruvbox,
                       foreground='white',
                       background='black',
                       primary='green',
-                      secondary='orange'
-)
-current_style = gstyle
+                      secondary='orange',
+                      tetriary='blue',
+    ),
+    'solarized' : Style(palette=solarized,
+                        foreground='white',
+                        background='black',
+                        primary='green',
+                        secondary='blue',
+                        tetriary='orange'
+    ),
+    'monokai' : Style(palette=monokai,
+                        foreground='white',
+                        background='black',
+                        primary='pink',
+                        secondary='green',
+                        tetriary='orange'
+    ),
+
+
+}
+current_style = styles['dracula']
 
 widget_defaults = dict(
     font='FiraCode NF',
     fontsize=12,
     padding=3,
-    foreground= current_style['foreground']
+    foreground=current_style['foreground']
 )
 extension_defaults = widget_defaults.copy()
+
+def create_bar(qtile = None):
+    global current_style
+    print(current_style)
+    main_bar = bar.Bar(
+        [
+            widget.GroupBox(fontsize=17,
+                            active=current_style['primary'],
+                            block_highlight_text_color=current_style['foreground'],
+                            this_current_screen_border=current_style['primary'],
+                            highlight_method="block",
+                            rounded=False),
+            widget.Prompt(),
+            WkWidget(style=current_style),
+            widget.Spacer(),
+            widget.Clock(format='   %a %d-%m %H:%M   ',
+                         foreground=current_style['secondary']),
+
+            widget.Volume(emoji=False, mute_command=[
+                        'amixer',
+                        'q',
+                        'set',
+                        'Master',
+                        'toggle']),
+            widget.TextBox(' ', fontsize=22),
+            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
+                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
+            widget.Systray(),
+        ], 24, background=current_style['background']
+    )
+
+    if qtile is None:
+        return main_bar
+    if qtile.current_screen:
+        for w in qtile.current_screen.top.widgets:
+            print('lol', w)
+            del w
+        del qtile.current_screen.top
+    qtile.current_screen.top = main_bar
+    qtile.current_screen.resize()
+
+def set_theme(theme_name):
+    def __inner__(qtile):
+        global current_style
+        if theme_name in styles:
+            current_style = styles[theme_name]
+            create_bar(qtile)
+        else:
+            raise Exception('Unrecognized theme {}'.format(theme_name))
+    print(current_style)
+    return __inner__
 
 group_table=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["Python", "", "stack"], ["IM", "", "max"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
 groups = [
     Group(name=n, label = f'{ic} {n}', layout=la) for n, ic, la in group_table
 ]
+
+groups.append(ScratchPad("scratchpad", [
+    DropDown("term", "konsole", opacity=0.8)
+]))
 
 resize_commands = [
     Key([], 'l', lazy.layout.grow_main(), desc='Grow main'),
@@ -122,6 +194,7 @@ r_commands = [
 l_commands = [
     Key([], 'm',   lazy.group.setlayout('monadtall'), desc='MonadTall'),
     Key([], 'w',   lazy.group.setlayout('monadwide'), desc='MonadWide'),
+    Key(['shift'], 'm',   lazy.group.setlayout('monadwide'), desc='MonadWide'),
     Key([], 'z',   lazy.group.setlayout('max'), desc='Zoom (max)'),
     Key([], 's',   lazy.group.setlayout('stack'), desc='Stack'),
     Key([], 'Tab', lazy.next_layout(), desc='Next layout'),
@@ -136,8 +209,17 @@ g_commands = [
     Key([], 's', lazy.group['System'].toscreen(), desc='Open System group'),
 ]
 
+theme_switch_commands = [
+    Key([], 'g', lazy.function(set_theme('gruvbox')), desc='Gruvbox'),
+    Key([], 'd', lazy.function(set_theme('dracula')), desc='Dracula'),
+    Key([], 's', lazy.function(set_theme('solarized')), desc='Solarized'),
+    Key([], 'm', lazy.function(set_theme('monokai')), desc='Monokai'),
+]
+
 t_commands = [
-    Key([], 'k', lazy.widget['keyboardlayout'].next_keyboard(), desc='Cycle xkb layouts')
+    Key([], 'k', lazy.widget['keyboardlayout'].next_keyboard(), desc='Cycle xkb layouts'),
+    Key([], 't', lazy.group['scratchpad'].dropdown_toggle('term'), desc='dropdown term'),
+    KeyChord([], 's', theme_switch_commands, desc='Styles'),
 ]
 
 chain_root = [
@@ -184,6 +266,8 @@ chain_root = [
 
 group_keys = []
 for i,g in enumerate(groups):
+    if g.label == '':
+        continue
     group_keys.extend([
         # mod1 + letter of group = switch to group
         Key([], str(i+1), lazy.group[g.name].toscreen(),
@@ -216,7 +300,7 @@ mouse = [
 
 layouts = [
     layout.Max(),
-    layout.Stack(border_width=2, num_stacks=2, border_focus=current_style['blue']),
+    layout.Stack(border_width=2, num_stacks=2, border_focus=current_style['tetriary']),
     # Try more layouts by unleashing below layouts.
     layout.Bsp(),
     # layout.Columns(),
@@ -250,42 +334,16 @@ floating_layout = layout.Floating(float_rules=[
     # {'wname': 'Execute D-Bus Method'},
 ])
 
+groupbox_widget = widget.GroupBox(fontsize=17,
+                           active=current_style['primary'],
+                           block_highlight_text_color=current_style['foreground'],
+                           this_current_screen_border=current_style['primary'],
+                           highlight_method="block",
+                           rounded=False
+)
+
 screens = [
-    Screen(
-        top=bar.Bar(
-            [
-                widget.GroupBox(font="FiraCode Nerd Font",
-                                fontsize=17,
-                                active= current_style['primary'],
-                                block_highlight_text_color=current_style['foreground'],
-                                this_current_screen_border= current_style['primary'],
-                                highlight_method="block",
-                                rounded=False),
-                widget.Prompt(),
-                # widget.Chord(),
-                WkWidget(style=current_style),
-                # widget.Notify(),
-                widget.Spacer(),
-                # widget.CPUGraph(type='line'),
-                widget.Clock(format='   %a %d-%m %H:%M   ',
-                             foreground=current_style['secondary']),
-                widget.Volume(emoji=False, mute_command=[
-                            'amixer',
-                            'q',
-                            'set',
-                            'Master',
-                            'toggle']),
-                widget.TextBox(' ', fontsize=22),
-                widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
-                                      display_map={'us_custom': 'code', 'dk': 'DK'}),
-                widget.Systray(),
-            #     widget.QuickExit(default_text=' ⏻ ',
-            #                      foreground=current_style['red'],
-            #                      fontsize='15'),
-            ],
-            24, background=current_style['background']
-        ),
-    ),
+    Screen(top=create_bar()),
 ]
 
 @hook.subscribe.client_new
