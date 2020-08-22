@@ -227,11 +227,12 @@ def set_theme(theme_name):
         if theme_name in styles:
             current_style = styles[theme_name]
             create_bar(qtile)
+        else:
+            raise Exception('Unrecognized theme {}'.format(theme_name))
+
         if current_style.emacs_theme:
             emacs_command= '(load-theme \'{})'.format(current_style.emacs_theme)
             subprocess.call(['emacsclient', '-e', emacs_command])
-        else:
-            raise Exception('Unrecognized theme {}'.format(theme_name))
     return __inner__
 #+END_SRC
 
