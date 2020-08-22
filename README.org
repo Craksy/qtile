@@ -4,8 +4,6 @@
 
 * Table of Contents :TOC_3:
 - [[#introduction][Introduction]]
-  - [[#hacks][Hacks]]
-  - [[#widgets][Widgets]]
 - [[#configuration][Configuration]]
   - [[#imports][Imports]]
     - [[#qtile][Qtile]]
@@ -32,6 +30,10 @@
   - [[#hooks][Hooks]]
     - [[#client-new][Client new]]
     - [[#startup-once][Startup once]]
+- [[#hacks][Hacks]]
+  - [[#libqtile-hacks][libqtile hacks]]
+  - [[#widgets][Widgets]]
+  - [[#styling][Styling]]
 - [[#ideas-for-improvement-69][Ideas for improvement]]
 - [[#custom-classes][Custom classes]]
 - [[#issues-12][Issues]]
@@ -50,24 +52,6 @@ hacks and widgets below.
 This config is still very much a work in progress. There are plenty of features
 i would like to add, things that could be more effecient and things that could
 be more pleasing to the eye.
-
-** Hacks
-In order to make keychords the way i wanted to, i had to make some minor changes
-to qtile.
-
-I'll make it available here once i cleaned it up a little, but these
-are the basic modifications i made:
-
-- added a method that grabs every single key except for modifiers, without binding an action to it.
-- made qtile break current keychord if an unbound key is pressed.
-- Gave KeyChords a description property.
-
-** Widgets
-I have made a widget inspired by emacs which-key, to help remember seldomly used
-bindings, and to aid in memorizing new ones.
-
-It's still a work in progress and is currently pretty tightly coupled with my
-specific setup and use case.
 
 * Configuration
 The actual config. This is where i organise the code that will be 'tangled' to
@@ -511,8 +495,8 @@ mouse = [
 #+END_SRC
 
 ** Layouts
-This is where we define layouts. not an aweful lot to tell. perhaps that's a
-sign that i'm not taking proper advantage of the system.
+This is where we define layouts. not an aweful lot to tell here.
+
 #+BEGIN_SRC python :tangle config.py
 layouts = [
     layout.Max(),
@@ -589,6 +573,30 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
+* Hacks
+** libqtile hacks
+In order to make keychords behave the way i wanted to, i had to make some minor
+changes to qtile. These changes simply make unbound keys break keychords, and
+allows adding descriptions for the which-key widget.
+
+I'll make it available here once i cleaned it up a little, but these
+are the basic modifications i made:
+
+- added a method that grabs every single key except for modifiers, without binding an action to it.
+- call abovementioned method whenever we enter a keychord in order to receive events on all keypresses.
+- made qtile break current keychord if an unbound key is pressed.
+- Gave KeyChords a description property.
+
+** Widgets
+I have made a widget inspired by emacs which-key, to help remember seldomly used
+bindings, and to aid in memorizing new ones.
+
+It's still a work in progress and is currently pretty tightly coupled with my
+specific setup and use case.
+
+** Styling
+I made a style module contained in ~color_themes.py~ which helps having
+consistent theming and makes it easy to add additional themes.
 * Ideas for improvement [6/9]
 Features i have not yet implemented in my config, but i feel should be there.
 
