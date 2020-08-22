@@ -18,10 +18,8 @@ from typing import List
 import subprocess
 from subprocess import call
 import os
-import pynvim
 import datetime
 from bitstring import BitString
-from pynput import keyboard
 from itertools import chain
 from color_themes import gruvbox, Style, dracula, solarized, monokai
 from desktop_widget import WkWidget
@@ -46,6 +44,7 @@ styles = {
                      primary='blue',
                      secondary='pink',
                      tetriary='purple',
+                     emacs_theme='doom-dracula',
     ),
     'gruvbox' : Style(palette=gruvbox,
                       foreground='white',
@@ -53,23 +52,26 @@ styles = {
                       primary='green',
                       secondary='orange',
                       tetriary='blue',
+                      emacs_theme='doom-gruvbox',
     ),
     'solarized' : Style(palette=solarized,
                         foreground='white',
                         background='black',
                         primary='green',
                         secondary='blue',
-                        tetriary='orange'
+                        tetriary='orange',
+                        emacs_theme='doom-solarized-dark',
+
+
     ),
     'monokai' : Style(palette=monokai,
                         foreground='white',
                         background='black',
                         primary='pink',
                         secondary='green',
-                        tetriary='orange'
+                        tetriary='orange',
+                        emacs_theme='doom-molokai'
     ),
-
-
 }
 current_style = styles['dracula']
 
@@ -83,7 +85,6 @@ extension_defaults = widget_defaults.copy()
 
 def create_bar(qtile = None):
     global current_style
-    print(current_style)
     main_bar = bar.Bar(
         [
             widget.GroupBox(fontsize=17,
@@ -98,16 +99,16 @@ def create_bar(qtile = None):
             widget.Clock(format='   %a %d-%m %H:%M   ',
                          foreground=current_style['secondary']),
 
+            widget.TextBox(' ', fontsize=22),
+            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', ''],
+                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
+            widget.Systray(),
             widget.Volume(emoji=False, mute_command=[
                         'amixer',
                         'q',
                         'set',
                         'Master',
                         'toggle']),
-            widget.TextBox(' ', fontsize=22),
-            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
-                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
-            widget.Systray(),
         ], 24, background=current_style['background']
     )
 
@@ -115,7 +116,6 @@ def create_bar(qtile = None):
         return main_bar
     if qtile.current_screen:
         for w in qtile.current_screen.top.widgets:
-            print('lol', w)
             del w
         del qtile.current_screen.top
     qtile.current_screen.top = main_bar
@@ -127,12 +127,14 @@ def set_theme(theme_name):
         if theme_name in styles:
             current_style = styles[theme_name]
             create_bar(qtile)
+        if current_style.emacs_theme:
+            emacs_command= '(load-theme \'{})'.format(current_style.emacs_theme)
+            subprocess.call(['emacsclient', '-e', emacs_command])
         else:
             raise Exception('Unrecognized theme {}'.format(theme_name))
-    print(current_style)
     return __inner__
 
-group_table=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["Python", "", "stack"], ["IM", "", "max"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
+group_table=[["Dev", "✎", "max"], ["Home", "", "monadtall"], ["Web", "爵", "max"], ["IM", "", "max"], ["Python", "", "stack"], ["Sys", "", "monadtall"], ["Misc", "", "monadtall"]]
 groups = [
     Group(name=n, label = f'{ic} {n}', layout=la) for n, ic, la in group_table
 ]
@@ -160,6 +162,7 @@ to_group_commands = [
     Key([], '5', lazy.window.togroup('IM', switch_group=True)),
     Key([], '6', lazy.window.togroup('Sys', switch_group=True)),
     Key([], '7', lazy.window.togroup('Misc', switch_group=True)),
+
     Key([], 'd', lazy.window.togroup('Dev', switch_group=True)),
     Key([], 'h', lazy.window.togroup('Home', switch_group=True)),
     Key([], 'w', lazy.window.togroup('Web', switch_group=True)),
@@ -206,7 +209,7 @@ g_commands = [
     Key([], 'w', lazy.group['Web'].toscreen(), desc='Open Web group'),
     Key([], 'p', lazy.group['Python'].toscreen(), desc='Open Python group'),
     Key([], 'i', lazy.group['IM'].toscreen(), desc='Open IM group'),
-    Key([], 's', lazy.group['System'].toscreen(), desc='Open System group'),
+    Key([], 's', lazy.group['Sys'].toscreen(), desc='Open System group'),
 ]
 
 theme_switch_commands = [
@@ -241,7 +244,7 @@ chain_root = [
     Key([], "c", lazy.spawn('dmenu_configs'), desc='$Configs'),
     Key([], "p", lazy.spawn('wallpaper-dmenu.sh'), desc='$Wallpapers'),
     Key([], 'Return', lazy.spawn(terminal), desc='Launch terminal'),
-    Key([mod], 'Return', lazy.spawn(terminal), desc='Launch terminal'),
+    Key([mod], 'Return', lazy.spawn(terminal), desc=''),
 
     Key([], "j", lazy.layout.down(),
         desc="Move down"),
@@ -252,15 +255,15 @@ chain_root = [
     Key([], "l", lazy.layout.right(),
         desc="Move right"),
     Key([mod], "j", lazy.layout.down(),
-        desc="Move down"),
+        desc=""),
     Key([mod], "k", lazy.layout.up(),
-        desc="Move up"),
+        desc=""),
     Key([mod], "h", lazy.layout.left(),
-        desc="Move left"),
+        desc=""),
     Key([mod], "l", lazy.layout.right(),
-        desc="Move right"),
+        desc=""),
     Key(['control'], 'r', lazy.restart()),
-    Key([mod], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
+    Key([mod], 'colon', lazy.qtilecmd(), desc=''),
     Key([], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
 ]
 
@@ -275,9 +278,9 @@ for i,g in enumerate(groups):
 
         # mod1 + shift + letter of group = switch to & move focused window to group
         Key([mod, "shift"], str(i+1), lazy.window.togroup(g.name, switch_group=True),
-            desc="Switch to & move focused window to group {}".format(g.name)),
+            desc=""),
         Key([mod], str(i+1), lazy.group[g.name].toscreen(),
-            desc="go to {}".format(g.label)),
+            desc="".format(g.label)),
         # Or, use below if you prefer not to switch to that group.
         # # mod1 + shift + letter of group = move focused window to group
         # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
@@ -334,22 +337,13 @@ floating_layout = layout.Floating(float_rules=[
     # {'wname': 'Execute D-Bus Method'},
 ])
 
-groupbox_widget = widget.GroupBox(fontsize=17,
-                           active=current_style['primary'],
-                           block_highlight_text_color=current_style['foreground'],
-                           this_current_screen_border=current_style['primary'],
-                           highlight_method="block",
-                           rounded=False
-)
-
 screens = [
     Screen(top=create_bar()),
 ]
 
 @hook.subscribe.client_new
 def client_new(client: window.Window):
-    global wkwidget
-    if client.name == 'qutebrowser':
+    if client.name in ('qutebrowser', 'chromium'):
         client.togroup('Web')
 
 @hook.subscribe.startup

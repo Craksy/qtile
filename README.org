@@ -4,6 +4,8 @@
 
 * Table of Contents :TOC_3:
 - [[#introduction][Introduction]]
+  - [[#hacks][Hacks]]
+  - [[#widgets][Widgets]]
 - [[#configuration][Configuration]]
   - [[#imports][Imports]]
     - [[#qtile][Qtile]]
@@ -26,32 +28,46 @@
     - [[#actual-root][Actual root]]
     - [[#mouse-actions][Mouse actions]]
   - [[#layouts][Layouts]]
-  - [[#widgets][Widgets]]
-    - [[#groupbox][GroupBox]]
-    - [[#which-key][Which-key]]
-    - [[#volume][Volume]]
-    - [[#keyboardlayout][KeyboardLayout]]
   - [[#screenbar][Screen/Bar]]
   - [[#hooks][Hooks]]
     - [[#client-new][Client new]]
     - [[#startup-once][Startup once]]
-- [[#ideas-for-improvement-57][Ideas for improvement]]
+- [[#ideas-for-improvement-69][Ideas for improvement]]
 - [[#custom-classes][Custom classes]]
-- [[#issues-02][Issues]]
-  - [[#--fix-modifiers][[ ] Fix modifiers]]
+- [[#issues-12][Issues]]
+  - [[#x-fix-modifiers][[X] Fix modifiers]]
   - [[#--the-bar-and-all-widgets-duplicates-upon-switching-themes][[ ] the bar and all widgets duplicates upon switching themes]]
 
 * Introduction
-+This document is meant as a playground for learning about org modes `tangle`
-feature, which can be used to make literate configs.+
-
 This document used to be a playground to learn about ~babel :tangle~ but is now
 home to my personal qtile config.
 
-While github is able to render org documents very well, if you're using emacs, i
-strongly recommend reading this document in org mode.
+This config focuses heavily on keybindings and styling.
+It relies on a few hacks i made to the Qtile source, to make keybindings behave
+how i want them to, and to interact nicely with a custom widget i made. see
+hacks and widgets below.
 
-i keep some additional notes in [[file:../../org/roam/20200801222022-litterate_qtile_config.org][litterate qtile config]]
+This config is still very much a work in progress. There are plenty of features
+i would like to add, things that could be more effecient and things that could
+be more pleasing to the eye.
+
+** Hacks
+In order to make keychords the way i wanted to, i had to make some minor changes
+to qtile.
+
+I'll make it available here once i cleaned it up a little, but these
+are the basic modifications i made:
+
+- added a method that grabs every single key except for modifiers, without binding an action to it.
+- made qtile break current keychord if an unbound key is pressed.
+- Gave KeyChords a description property.
+
+** Widgets
+I have made a widget inspired by emacs which-key, to help remember seldomly used
+bindings, and to aid in memorizing new ones.
+
+It's still a work in progress and is currently pretty tightly coupled with my
+specific setup and use case.
 
 * Configuration
 The actual config. This is where i organise the code that will be 'tangled' to
@@ -84,10 +100,8 @@ from typing import List
 import subprocess
 from subprocess import call
 import os
-import pynvim
 import datetime
 from bitstring import BitString
-from pynput import keyboard
 from itertools import chain
 from color_themes import gruvbox, Style, dracula, solarized, monokai
 from desktop_widget import WkWidget
@@ -123,6 +137,7 @@ styles = {
                      primary='blue',
                      secondary='pink',
                      tetriary='purple',
+                     emacs_theme='doom-dracula',
     ),
     'gruvbox' : Style(palette=gruvbox,
                       foreground='white',
@@ -130,31 +145,31 @@ styles = {
                       primary='green',
                       secondary='orange',
                       tetriary='blue',
+                      emacs_theme='doom-gruvbox',
     ),
     'solarized' : Style(palette=solarized,
                         foreground='white',
                         background='black',
                         primary='green',
                         secondary='blue',
-                        tetriary='orange'
+                        tetriary='orange',
+                        emacs_theme='doom-solarized-dark',
+
+
     ),
     'monokai' : Style(palette=monokai,
                         foreground='white',
                         background='black',
                         primary='pink',
                         secondary='green',
-                        tetriary='orange'
+                        tetriary='orange',
+                        emacs_theme='doom-molokai'
     ),
-
-
 }
 current_style = styles['dracula']
 #+END_SRC
 
 *** Widget defaults
-Widget defaults are used by everthing on the bar. eventually also my custom
-widgets... at least that's the plan.
-
 #+BEGIN_SRC python :tangle config.py
 widget_defaults = dict(
     font='FiraCode NF',
@@ -167,10 +182,14 @@ extension_defaults = widget_defaults.copy()
 
 ** Functions
 *** create_bar
+this is such a hackjob. i really need to find a better solution for this
+basically i'm using a function to initialize my bar so that i can call this if i
+want to recreate it. I use this when changing theme so i can redraw the bar with
+new attributes.
+
 #+BEGIN_SRC python :tangle config.py
 def create_bar(qtile = None):
     global current_style
-    print(current_style)
     main_bar = bar.Bar(
         [
             widget.GroupBox(fontsize=17,
@@ -185,16 +204,16 @@ def create_bar(qtile = None):
             widget.Clock(format='   %a %d-%m %H:%M   ',
                          foreground=current_style['secondary']),
 
+            widget.TextBox(' ', fontsize=22),
+            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', ''],
+                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
+            widget.Systray(),
             widget.Volume(emoji=False, mute_command=[
                         'amixer',
                         'q',
                         'set',
                         'Master',
                         'toggle']),
-            widget.TextBox(' ', fontsize=22),
-            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk'],
-                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
-            widget.Systray(),
         ], 24, background=current_style['background']
     )
 
@@ -202,7 +221,6 @@ def create_bar(qtile = None):
         return main_bar
     if qtile.current_screen:
         for w in qtile.current_screen.top.widgets:
-            print('lol', w)
             del w
         del qtile.current_screen.top
     qtile.current_screen.top = main_bar
@@ -210,6 +228,9 @@ def create_bar(qtile = None):
 #+END_SRC
 
 *** set_theme
+Set theme and redraw the bar
+also changes theme in emacs but this requires confirmation the first time using
+a new theme.
 #+BEGIN_SRC python :tangle config.py
 def set_theme(theme_name):
     def __inner__(qtile):
@@ -217,17 +238,17 @@ def set_theme(theme_name):
         if theme_name in styles:
             current_style = styles[theme_name]
             create_bar(qtile)
+        if current_style.emacs_theme:
+            emacs_command= '(load-theme \'{})'.format(current_style.emacs_theme)
+            subprocess.call(['emacsclient', '-e', emacs_command])
         else:
             raise Exception('Unrecognized theme {}'.format(theme_name))
-    print(current_style)
     return __inner__
 #+END_SRC
 
 ** Groups
 These are workspaces. a place where a certain type of programs belong or a
-place that supports a certain type of workflow. For example the place where all
-IM programs live, or a space for development with a large editor window along
-with two small windows for REPL and logging.
+place that supports a certain type of workflow.
 
 #+name:groups_table
 | Group Name | Label icon | layout    |
@@ -235,8 +256,8 @@ with two small windows for REPL and logging.
 | Dev        | ✎          | max       |
 | Home       |           | monadtall |
 | Web        | 爵         | max       |
-| Python     |           | stack     |
 | IM         |           | max       |
+| Python     |           | stack     |
 | Sys        |           | monadtall |
 | Misc       |           | monadtall |
 
@@ -250,8 +271,9 @@ groups = [
 ]
 #+END_SRC
 
-at this point it would've probably been prettier to just use a regular loop. i
-do love me some list comprehensions though
+
+(at this point it would've probably been prettier to just use a regular loop. i
+do love me some list comprehensions though)
 
 
 #+BEGIN_SRC python :tangle config.py
@@ -259,8 +281,6 @@ groups.append(ScratchPad("scratchpad", [
     DropDown("term", "konsole", opacity=0.8)
 ]))
 #+END_SRC
-
-#+RESULTS:
 
 ** Keybindings
 *** Window actions
@@ -277,8 +297,7 @@ resize_commands = [
 #+END_SRC
 
 **** Moving
-Bindings for moving windows around the screen. as with resizing perhaps t
-is
+Bindings for moving windows around the screen.
 should be specific to each layout.
 
 #+BEGIN_SRC python :tangle config.py
@@ -299,6 +318,7 @@ to_group_commands = [
     Key([], '5', lazy.window.togroup('IM', switch_group=True)),
     Key([], '6', lazy.window.togroup('Sys', switch_group=True)),
     Key([], '7', lazy.window.togroup('Misc', switch_group=True)),
+
     Key([], 'd', lazy.window.togroup('Dev', switch_group=True)),
     Key([], 'h', lazy.window.togroup('Home', switch_group=True)),
     Key([], 'w', lazy.window.togroup('Web', switch_group=True)),
@@ -356,9 +376,7 @@ l_commands = [
 #+END_SRC
 
 *** Group actions
-As with layouts this is just some bindings to change the current item, and i
-wonder if i can't come up with something more interesting.
-
+just bindings to move to specific layouts
 #+BEGIN_SRC python :tangle config.py
 g_commands = [
     Key([], 'd', lazy.group['Dev'].toscreen(), desc='Open Dev group'),
@@ -366,13 +384,14 @@ g_commands = [
     Key([], 'w', lazy.group['Web'].toscreen(), desc='Open Web group'),
     Key([], 'p', lazy.group['Python'].toscreen(), desc='Open Python group'),
     Key([], 'i', lazy.group['IM'].toscreen(), desc='Open IM group'),
-    Key([], 's', lazy.group['System'].toscreen(), desc='Open System group'),
+    Key([], 's', lazy.group['Sys'].toscreen(), desc='Open System group'),
 ]
 #+END_SRC
 
 *** Toggles
 A group of keybindings dedicated to toggling or cycling through misc. settings
 **** Theme switch
+a little buggy but it works.
 #+BEGIN_SRC python :tangle config.py
 theme_switch_commands = [
     Key([], 'g', lazy.function(set_theme('gruvbox')), desc='Gruvbox'),
@@ -418,7 +437,7 @@ chain_root = [
     Key([], "c", lazy.spawn('dmenu_configs'), desc='$Configs'),
     Key([], "p", lazy.spawn('wallpaper-dmenu.sh'), desc='$Wallpapers'),
     Key([], 'Return', lazy.spawn(terminal), desc='Launch terminal'),
-    Key([mod], 'Return', lazy.spawn(terminal), desc='Launch terminal'),
+    Key([mod], 'Return', lazy.spawn(terminal), desc=''),
 
     Key([], "j", lazy.layout.down(),
         desc="Move down"),
@@ -429,15 +448,15 @@ chain_root = [
     Key([], "l", lazy.layout.right(),
         desc="Move right"),
     Key([mod], "j", lazy.layout.down(),
-        desc="Move down"),
+        desc=""),
     Key([mod], "k", lazy.layout.up(),
-        desc="Move up"),
+        desc=""),
     Key([mod], "h", lazy.layout.left(),
-        desc="Move left"),
+        desc=""),
     Key([mod], "l", lazy.layout.right(),
-        desc="Move right"),
+        desc=""),
     Key(['control'], 'r', lazy.restart()),
-    Key([mod], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
+    Key([mod], 'colon', lazy.qtilecmd(), desc=''),
     Key([], 'colon', lazy.qtilecmd(), desc='Qtile Cmd'),
 ]
 #+END_SRC
@@ -458,9 +477,9 @@ for i,g in enumerate(groups):
 
         # mod1 + shift + letter of group = switch to & move focused window to group
         Key([mod, "shift"], str(i+1), lazy.window.togroup(g.name, switch_group=True),
-            desc="Switch to & move focused window to group {}".format(g.name)),
+            desc=""),
         Key([mod], str(i+1), lazy.group[g.name].toscreen(),
-            desc="go to {}".format(g.label)),
+            desc="".format(g.label)),
         # Or, use below if you prefer not to switch to that group.
         # # mod1 + shift + letter of group = move focused window to group
         # Key([mod, "shift"], i.name, lazy.window.togroup(i.name),
@@ -472,7 +491,6 @@ chain_root[0:0] = group_keys
 *** Actual root
 And this is the where we add our leader to Qtiles keys list.
 #+BEGIN_SRC python :tangle config.py
-
 keys = [
     KeyChord([], 'Super_L', chain_root),
     KeyChord([], 'Super_R', chain_root),
@@ -537,25 +555,13 @@ floating_layout = layout.Floating(float_rules=[
 ])
 #+END_SRC
 
-** Widgets
-*** GroupBox
-#+BEGIN_SRC python :tangle config.py
-groupbox_widget = widget.GroupBox(fontsize=17,
-                           active=current_style['primary'],
-                           block_highlight_text_color=current_style['foreground'],
-                           this_current_screen_border=current_style['primary'],
-                           highlight_method="block",
-                           rounded=False
-)
-#+END_SRC
-*** Which-key
-*** Volume
-*** KeyboardLayout
 ** Screen/Bar
 I currently only have a single screen and i only use a single bar so they go
 together for now. One possibility however could be to make several different
 bars, and then change them out depending on current mode.
 
+This is a bit awkward. This used to be where i defined all my widgets but is now
+just a call to ~create_bar~.
 #+BEGIN_SRC python :tangle config.py
 screens = [
     Screen(top=create_bar()),
@@ -570,8 +576,7 @@ Called whenever a new client is spawned.
 #+BEGIN_SRC python :tangle config.py
 @hook.subscribe.client_new
 def client_new(client: window.Window):
-    global wkwidget
-    if client.name == 'qutebrowser':
+    if client.name in ('qutebrowser', 'chromium'):
         client.togroup('Web')
 #+END_SRC
 
@@ -584,7 +589,7 @@ def init():
     subprocess.call([startup_script_path])
 #+END_SRC
 
-* Ideas for improvement [5/7]
+* Ideas for improvement [6/9]
 Features i have not yet implemented in my config, but i feel should be there.
 
 - [X] i actually do not have any keybindings to send windows to other groups.
@@ -595,16 +600,16 @@ Features i have not yet implemented in my config, but i feel should be there.
 - [X] add key bindings to change keyboard layout.
 - [X] some sort of collection of styles/themes so i can swap between them.
 - [X] make a function to reconfigure the bar with a different theme.
-- [ ] Have a dropdown terminal
+- [X] Have a dropdown terminal
 - [ ] Find a way to have more features available through qtilecmd
 
 * Custom classes
 Nothing here yet. In this section i plan to describe various custom classes and
 widgets that my config uses
-* Issues [0/2]
+* Issues [1/2]
 Actual bugs and shitty code to be fixed goes here.
 
-** [ ] Fix modifiers
+** [X] Fix modifiers
 currently bindings that include modifier keys are ignored entirely by which-key,
 so that duplicates don't show up twice. However this also prevents bindings with
 intentional modifier keys from being displayed.

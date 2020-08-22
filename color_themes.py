@@ -11,6 +11,7 @@ class Style:
     primary: str
     secondary: str
     tetriary:str
+    emacs_theme:str
 
     def __getitem__(self, item):
         if hasattr(self, item):

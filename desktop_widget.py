@@ -48,7 +48,7 @@ class DesktopWidget(_Widget):
                                     self.window.window.wid,
                                     800, 400)
 
-        self.drawer.clear(self.background)
+        self.drawer.clear(self.background) #is this actually used?
         self.layout._configure(qtile, bar, self.window, self.drawer)
 
         self.window.handle_Expose = self.handle_Expose
@@ -75,8 +75,7 @@ class WkWidget(DesktopWidget):
 
     def create_collumns(self, chord:KeyChord):
         self.layout.clear()
-        mappings = [k for k in chord.submapings \
-                    if not (k.modifiers or k.key=='Escape') and k.desc != '']
+        mappings = [k for k in chord.submapings if k.desc != '']
         cur_row = 0
         min_width = 0
         nrows = 7
@@ -86,7 +85,12 @@ class WkWidget(DesktopWidget):
             self.layout.add_child(cur_column)
             hw = 0
             for m in c:
-                key_label = self.drawer.textlayout(m.key,
+                label_text = m.key
+                if 'shift' in m.modifiers:
+                    label_text = label_text.upper()
+                if 'ctrl' in m.modifiers:
+                    label_text = '^'+label_text
+                key_label = self.drawer.textlayout(label_text,
                                                    self.style['primary'],
                                                    'sans', 12,
                                                    None, True)
