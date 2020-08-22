@@ -100,8 +100,8 @@ def create_bar(qtile = None):
                          foreground=current_style['secondary']),
 
             widget.TextBox(' ', fontsize=22),
-            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', ''],
-                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
+            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us_ez'],
+                                    display_map={'us_custom': 'code', 'dk': 'DK', 'us_ez': 'EZ'}),
             widget.Systray(),
             widget.Volume(emoji=False, mute_command=[
                         'amixer',

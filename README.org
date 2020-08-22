@@ -44,6 +44,11 @@
 This document used to be a playground to learn about ~babel :tangle~ but is now
 home to my personal qtile config.
 
+While github renders org documents decently, if you happen to be an Emacs user,
+i strongly recommend reading this document in org mode.
+There's a bunch of missing line breaks here, which can make it a little hard to
+read.
+
 This config focuses heavily on keybindings and styling.
 It relies on a few hacks i made to the Qtile source, to make keybindings behave
 how i want them to, and to interact nicely with a custom widget i made. see
@@ -166,8 +171,8 @@ extension_defaults = widget_defaults.copy()
 
 ** Functions
 *** create_bar
-this is such a hackjob. i really need to find a better solution for this
-basically i'm using a function to initialize my bar so that i can call this if i
+this is such a hackjob. i really need to find a better solution for this.
+Basically i'm using a function to initialize my bar so that i can call this if i
 want to recreate it. I use this when changing theme so i can redraw the bar with
 new attributes.
 
@@ -189,8 +194,8 @@ def create_bar(qtile = None):
                          foreground=current_style['secondary']),
 
             widget.TextBox(' ', fontsize=22),
-            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', ''],
-                                    display_map={'us_custom': 'code', 'dk': 'DK'}),
+            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us_ez'],
+                                    display_map={'us_custom': 'code', 'dk': 'DK', 'us_ez': 'EZ'}),
             widget.Systray(),
             widget.Volume(emoji=False, mute_command=[
                         'amixer',
@@ -254,6 +259,7 @@ groups = [
     Group(name=n, label = f'{ic} {n}', layout=la) for n, ic, la in group_table
 ]
 #+END_SRC
+
 
 
 (at this point it would've probably been prettier to just use a regular loop. i
