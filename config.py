@@ -83,15 +83,15 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
-def theme_bar(qtile):
+def theme_bar(bar):
     global current_style
-    tbar = qtile.current_screen.top
+    # tbar = qtile.current_screen.top
     gbox = dict(
         active=current_style['primary'],
         block_highlight_text_color=current_style['foreground'],
         this_current_screen_border=current_style['primary'],
     )
-    for w in tbar.widgets:
+    for w in bar.widgets:
         if isinstance(w, WkWidget):
             w.style = current_style
         elif isinstance(w, widget.GroupBox):
@@ -99,63 +99,18 @@ def theme_bar(qtile):
             w.active=current_style['primary']
             w.block_highlight_text_color=current_style['foreground']
             w.this_current_screen_border=current_style['primary']
-
         elif isinstance(w, widget.Clock):
-            w.format='   %a %d-%m %H:%M   '
             w.foreground =current_style['secondary']
 
-        w.draw()
-
-
-
-    tbar.background=current_style['background']
-    tbar.draw()
-
-def create_bar(qtile = None):
-    global current_style
-    main_bar = bar.Bar(
-        [
-            widget.GroupBox(fontsize=17,
-                            active=current_style['primary'],
-                            block_highlight_text_color=current_style['foreground'],
-                            this_current_screen_border=current_style['primary'],
-                            highlight_method="block",
-                            rounded=False),
-            widget.Prompt(),
-            WkWidget(style=current_style),
-            widget.Spacer(),
-            widget.Clock(format='   %a %d-%m %H:%M   ',
-                         foreground=current_style['secondary']),
-
-            widget.TextBox(' ', fontsize=22),
-            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us_ez'],
-                                    display_map={'us_custom': 'code', 'dk': 'DK', 'us_ez': 'EZ'}),
-            widget.Systray(),
-            widget.Volume(emoji=False, mute_command=[
-                        'amixer',
-                        'q',
-                        'set',
-                        'Master',
-                        'toggle']),
-        ], 24, background=current_style['background']
-    )
-
-    if qtile is None:
-        return main_bar
-    if qtile.current_screen:
-        for w in qtile.current_screen.top.widgets:
-            del w
-        del qtile.current_screen.top
-    qtile.current_screen.top = main_bar
-    qtile.current_screen.resize()
-    theme_bar(qtile)
+    bar.background=current_style['background']
+    bar.draw()
 
 def set_theme(theme_name):
     def __inner__(qtile):
         global current_style
         if theme_name in styles:
             current_style = styles[theme_name]
-            theme_bar(qtile)
+            theme_bar(qtile.current_screen.top)
         else:
             raise Exception('Unrecognized theme {}'.format(theme_name))
 
@@ -369,7 +324,32 @@ floating_layout = layout.Floating(float_rules=[
 ])
 
 screens = [
-    Screen(top=create_bar()),
+    Screen(top= bar.Bar(
+        [
+            widget.GroupBox(fontsize=17,
+                            active=current_style['primary'],
+                            block_highlight_text_color=current_style['foreground'],
+                            this_current_screen_border=current_style['primary'],
+                            highlight_method="block",
+                            rounded=False),
+            widget.Prompt(),
+            WkWidget(style=current_style),
+            widget.Spacer(),
+            widget.Clock(format='   %a %d-%m %H:%M   ',
+                         foreground=current_style['secondary']),
+
+            widget.TextBox(' ', fontsize=22),
+            widget.KeyboardLayout(configured_keyboards=['us_custom', 'dk', 'us_ez'],
+                                  display_map={'us_custom': 'code', 'dk': 'DK', 'us_ez': 'EZ'}),
+            widget.Systray(),
+            widget.Volume(emoji=False, mute_command=[
+                'amixer',
+                'q',
+                'set',
+                'Master',
+                'toggle']),
+        ], 24, background=current_style['background']
+    )),
 ]
 
 @hook.subscribe.client_new
