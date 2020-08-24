@@ -83,6 +83,34 @@ widget_defaults = dict(
 )
 extension_defaults = widget_defaults.copy()
 
+def theme_bar(qtile):
+    global current_style
+    tbar = qtile.current_screen.top
+    gbox = dict(
+        active=current_style['primary'],
+        block_highlight_text_color=current_style['foreground'],
+        this_current_screen_border=current_style['primary'],
+    )
+    for w in tbar.widgets:
+        if isinstance(w, WkWidget):
+            w.style = current_style
+        elif isinstance(w, widget.GroupBox):
+            print('such groupbox\n so nisuch groupbox\n so nicece')
+            w.active=current_style['primary']
+            w.block_highlight_text_color=current_style['foreground']
+            w.this_current_screen_border=current_style['primary']
+
+        elif isinstance(w, widget.Clock):
+            w.format='   %a %d-%m %H:%M   '
+            w.foreground =current_style['secondary']
+
+        w.draw()
+
+
+
+    tbar.background=current_style['background']
+    tbar.draw()
+
 def create_bar(qtile = None):
     global current_style
     main_bar = bar.Bar(
@@ -120,13 +148,14 @@ def create_bar(qtile = None):
         del qtile.current_screen.top
     qtile.current_screen.top = main_bar
     qtile.current_screen.resize()
+    theme_bar(qtile)
 
 def set_theme(theme_name):
     def __inner__(qtile):
         global current_style
         if theme_name in styles:
             current_style = styles[theme_name]
-            create_bar(qtile)
+            theme_bar(qtile)
         else:
             raise Exception('Unrecognized theme {}'.format(theme_name))
 
@@ -175,6 +204,7 @@ to_group_commands = [
 
 w_commands = [
     Key([], 'q', lazy.window.kill(), desc='Kill'),
+    Key([], 'k', lazy.window.kill(), desc='Kill'),
     Key([], 'space', lazy.window.toggle_fullscreen(), desc='Toggle fullscreen'),
     Key([], 'w', lazy.spawn('rofi -show window'), desc='$Rofi windows'),
     KeyChord([mod], 'r', resize_commands, mode='Resize'),
